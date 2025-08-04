@@ -1,7 +1,7 @@
 # ghst_ - Multi-Client Social Media Scheduling Tool
 
 ## Overview
-ghst_ is a powerful multi-client social media scheduling platform designed for agencies and social media managers. Built with a hacker/crypto aesthetic, it provides a stylish dashboard for managing multiple clients' social media accounts, scheduled posts, and media uploads.
+ghst_ is a powerful, mobile-responsive multi-client social media scheduling platform designed for agencies and social media managers. Built with a hacker/crypto aesthetic, it provides a stylish dashboard for managing multiple clients' social media accounts, scheduled posts, and media uploads across desktop, tablet, and mobile devices.
 
 ## Tech Stack
 - **Backend**: PHP 8+ (vanilla PHP for cPanel compatibility)
@@ -16,47 +16,59 @@ ghst_ is a powerful multi-client social media scheduling platform designed for a
 
 ### 1. Admin Dashboard
 - Secure admin-only login system
-- Client switching functionality
+- Quick client switching via dropdown
 - Dark mode hacker/crypto aesthetic UI
+- Mobile-responsive design with bottom navigation
+- Real-time statistics and activity tracking
 
 ### 2. Multi-Client Management
+- Create and delete clients through UI
 - Seamless switching between clients
 - Isolated data per client
 - Client-specific timezone support
+- Smart deletion logic (soft delete with data, hard delete without)
 
 ### 3. Social Media Integrations
-- Instagram, Facebook, LinkedIn support
-- OAuth-based authentication
+- Instagram, Facebook, LinkedIn, Twitter/X, Threads support
+- OAuth-based authentication (placeholders ready)
 - Token management with expiry alerts
+- Platform-specific character limits and validation
 
 ### 4. Post Scheduler
-- Schedule posts to multiple platforms
+- Schedule posts to multiple platforms simultaneously
 - Media upload support (images/videos)
-- Platform-specific previews
+- Platform-specific previews and character counting
 - Draft and scheduled post management
+- Mobile-optimized post creation with floating action button (FAB)
 
 ### 5. Calendar View
 - Monthly/weekly calendar interface
-- Color-coded post statuses
+- Color-coded post statuses by platform
 - Drag-and-drop rescheduling
+- Mobile-optimized compact view
+- Touch-friendly date selection
 
 ### 6. Media Library
 - Client-specific media management
+- Drag-and-drop file uploads
 - Thumbnail generation
 - Media metadata tracking
+- Storage usage statistics
 
 ### 7. Analytics & Logs
 - Post success/failure tracking
 - Platform response logging
-- Basic analytics dashboard
+- Interactive analytics dashboard with charts
+- Performance metrics and engagement tracking
+- Activity audit trail
 
 ## Installation
 
 ### Requirements
 - PHP 8.0 or higher
-- MySQL 5.7 or higher
-- cPanel hosting account
-- SSL certificate (for OAuth)
+- MySQL 5.7 or higher (port 8889 for MAMP)
+- cPanel hosting account (or any PHP hosting)
+- SSL certificate (for OAuth in production)
 
 ### Setup Steps
 
@@ -75,8 +87,10 @@ ghst_ is a powerful multi-client social media scheduling platform designed for a
 3. **Configuration**
    - Copy `config.example.php` to `config.php`
    - Update database credentials
+   - For MAMP: Set DB_HOST to '127.0.0.1' and DB_PORT to 8889
    - Set your domain and paths
-   - Configure OAuth credentials
+   - Configure OAuth credentials when ready
+   - For development: session.cookie_secure = 0
 
 4. **Cron Job Setup**
    ```bash
@@ -94,23 +108,40 @@ ghst_ is a powerful multi-client social media scheduling platform designed for a
 ```
 /ghst_
   /dashboard      # Main dashboard files
+    index.php     # Dashboard home
+    posts.php     # Post management
+    calendar.php  # Calendar view
+    media.php     # Media library
+    analytics.php # Analytics dashboard
+    accounts.php  # Social accounts
+    settings.php  # User settings
+    switch-client.php # Client management
   /uploads        # User uploaded media
-  /api           # API endpoints (if implemented)
-  /assets        # CSS, JS, images (if implemented)
-    index.php      # Entry point
-    cron.php       # Scheduled post processor
-  /includes        # PHP includes and classes
-  /db             # Database schema and migrations
-  config.php      # Configuration file
+  /api           # API endpoints
+  /assets        # CSS, JS, images
+  /includes      # PHP includes and classes
+    auth.php     # Authentication class
+    db.php       # Database singleton
+    functions.php # Helper functions
+    layout.php   # Layout components
+  /db            # Database schema
+  index.php      # Entry point
+  login.php      # Login page
+  logout.php     # Logout handler
+  cron.php       # Scheduled post processor
+  config.php     # Configuration file
+  .htaccess      # Security rules
 ```
 
 ## Security Features
-- Session-based authentication
-- CSRF protection
+- Session-based authentication with proper cookie configuration
+- CSRF protection on all forms
 - Input validation and sanitization
-- File upload restrictions
-- SQL injection prevention
-- XSS protection
+- File upload restrictions (type and size)
+- SQL injection prevention via prepared statements
+- XSS protection through output encoding
+- Directory access restrictions via .htaccess
+- Protected configuration files
 
 ## Platform Limitations
 
@@ -120,30 +151,61 @@ ghst_ is a powerful multi-client social media scheduling platform designed for a
 | Facebook | 63,206 chars | Images, Videos | Link previews |
 | LinkedIn | 3,000 chars | Images, Videos, Documents | Professional tone |
 | Twitter/X | 280 chars | 4 images, 1 video | Thread support |
+| Threads | 500 chars | Images, Videos | Instagram integration |
 
 ## Advanced Features
-- Post preview by platform
+- Post preview by platform with real-time character counting
 - Timezone handling per client
-- Failure recovery system
+- Failure recovery system with retry queue
 - Draft management
 - Activity audit trail
 - Token expiry alerts
-- Mobile-responsive design
+- Mobile-first responsive design
+- Touch gestures (swipe actions, pull-to-refresh)
+- Floating Action Button (FAB) for quick posts
+- Bottom navigation bar (mobile)
+- Haptic feedback support
+- Safe area compatibility (iPhone notch, etc.)
 
 ## Troubleshooting
 
 ### Common Issues
-1. **Cron not running**: Check cPanel error logs
-2. **OAuth failures**: Verify redirect URLs match
-3. **Upload errors**: Check file permissions
-4. **Token expired**: Re-authenticate in settings
+1. **Database connection failed**: 
+   - For MAMP: Change DB_HOST to '127.0.0.1' instead of 'localhost'
+   - Check DB_PORT (usually 8889 for MAMP)
+
+2. **Mobile login issues**:
+   - Set `session.cookie_secure` to 0 for HTTP development
+   - Use `session.cookie_samesite` = 'Lax' for cross-site compatibility
+
+3. **Cron not running**: Check cPanel error logs
+
+4. **OAuth failures**: Verify redirect URLs match
+
+5. **Upload errors**: Check file permissions (755 for uploads folder)
+
+6. **Token expired**: Re-authenticate in settings
+
+## Mobile Testing
+
+To test on mobile devices:
+```bash
+# Start server on all interfaces
+php -S 0.0.0.0:8000
+
+# Access from mobile device using computer's IP
+http://YOUR_COMPUTER_IP:8000
+```
 
 ## Future Roadmap
 - TikTok integration
 - YouTube Shorts support
-- Advanced analytics
+- Advanced analytics with export
 - White-label options
 - API for external integrations
+- Team collaboration features
+- A/B testing for posts
+- AI-powered content suggestions
 
 ## Support
 For issues or questions, check the UPDATES.md file for recent changes and known issues.

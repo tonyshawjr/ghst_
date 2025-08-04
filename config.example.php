@@ -91,8 +91,8 @@ if (ENVIRONMENT === 'development') {
 // Session Configuration
 ini_set('session.cookie_httponly', 1);
 ini_set('session.use_only_cookies', 1);
-ini_set('session.cookie_secure', 1); // Enable for HTTPS
-ini_set('session.cookie_samesite', 'Strict');
+ini_set('session.cookie_secure', 1); // Enable for HTTPS in production
+ini_set('session.cookie_samesite', 'Lax'); // Lax for better compatibility
 
 // Timezone
 date_default_timezone_set(APP_TIMEZONE);

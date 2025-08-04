@@ -391,7 +391,68 @@ function renderFooter() {
     </div>
     
     <script>
+        // Haptic feedback utility
+        function triggerHaptic(duration = 10) {
+            if ('vibrate' in navigator) {
+                navigator.vibrate(duration);
+            }
+        }
+        
+        // Enhanced haptic patterns
+        const hapticPatterns = {
+            light: 10,
+            medium: 20,
+            heavy: 30,
+            double: [20, 50, 20],
+            success: [10, 30, 10, 30, 10],
+            error: [50, 100, 50]
+        };
+        
+        function triggerHapticPattern(pattern) {
+            if ('vibrate' in navigator) {
+                const vibrationPattern = hapticPatterns[pattern] || pattern;
+                navigator.vibrate(vibrationPattern);
+            }
+        }
+        
+        // Add haptic feedback to all touch targets
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add haptic to FAB
+            document.querySelector('.fab')?.addEventListener('click', function() {
+                triggerHapticPattern('medium');
+            });
+            
+            // Add haptic to bottom nav items
+            document.querySelectorAll('.touch-target').forEach(element => {
+                element.addEventListener('click', function() {
+                    triggerHaptic();
+                });
+            });
+            
+            // Add haptic to buttons
+            document.querySelectorAll('button').forEach(button => {
+                button.addEventListener('click', function() {
+                    triggerHaptic();
+                });
+            });
+            
+            // Add haptic feedback to swipe gestures
+            let swipeDetected = false;
+            document.addEventListener('touchmove', function(e) {
+                const touch = e.touches[0];
+                if (!swipeDetected && touch.clientX < 50) {
+                    swipeDetected = true;
+                    triggerHapticPattern('light');
+                }
+            });
+            
+            document.addEventListener('touchend', function() {
+                swipeDetected = false;
+            });
+        });
+        
         function showAddClientModal() {
+            triggerHaptic();
             document.getElementById('addClientModal').classList.remove('hidden');
         }
         
@@ -400,6 +461,7 @@ function renderFooter() {
         }
         
         function showQuickCreateModal() {
+            triggerHapticPattern('medium');
             document.getElementById('quickCreateModal').classList.remove('hidden');
             document.getElementById('quickCreateModal').classList.add('flex');
         }

@@ -568,6 +568,9 @@ function handleSwipe() {
     if (Math.abs(swipeDistance) > swipeThreshold) {
         const postId = currentSwipeElement.dataset.postId;
         
+        // Trigger haptic feedback for successful swipe
+        triggerHapticFeedback('medium');
+        
         if (swipeDistance > 0) {
             // Swipe right - edit post
             editPost(postId);
@@ -581,9 +584,16 @@ function handleSwipe() {
 }
 
 // Haptic feedback for supported devices
-function triggerHapticFeedback() {
+function triggerHapticFeedback(type = 'light') {
     if (navigator.vibrate) {
-        navigator.vibrate(50);
+        const patterns = {
+            light: 10,
+            medium: 25,
+            heavy: 40,
+            double: [20, 50, 20],
+            success: [10, 30, 10, 30, 10]
+        };
+        navigator.vibrate(patterns[type] || patterns.light);
     }
 }
 
@@ -614,6 +624,12 @@ document.addEventListener('touchmove', function(e) {
         if (pullDistance > 100) {
             // Show pull to refresh indicator
             document.body.style.transform = `translateY(${Math.min(pullDistance * 0.5, 50)}px)`;
+            
+            // Haptic feedback when threshold is reached
+            if (pullDistance > 150 && !this.hapticTriggered) {
+                this.hapticTriggered = true;
+                triggerHapticFeedback('medium');
+            }
         }
     }
 }, { passive: true });
@@ -623,8 +639,9 @@ document.addEventListener('touchend', function(e) {
         const pullDistance = pullToRefreshCurrentY - pullToRefreshStartY;
         
         if (pullDistance > 150) {
-            // Trigger refresh
-            location.reload();
+            // Trigger refresh with success haptic
+            triggerHapticFeedback('success');
+            setTimeout(() => location.reload(), 100);
         } else {
             // Reset
             document.body.style.transform = '';
