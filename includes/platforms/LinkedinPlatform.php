@@ -27,12 +27,12 @@ class LinkedinPlatform extends Platform {
         return $this->authUrl . '?' . http_build_query($params);
     }
     
-    public function handleCallback($code, $state = null) {
+    public function handleCallback($code, $state = null, $redirectUri = null) {
         // Exchange code for access token
         $tokenData = [
             'grant_type' => 'authorization_code',
             'code' => $code,
-            'redirect_uri' => LINKEDIN_REDIRECT_URI,
+            'redirect_uri' => $redirectUri,
             'client_id' => LINKEDIN_CLIENT_ID,
             'client_secret' => LINKEDIN_CLIENT_SECRET,
         ];

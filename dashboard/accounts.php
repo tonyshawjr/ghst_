@@ -43,26 +43,45 @@ foreach ($accounts as $account) {
     $accountsByPlatform[$account['platform']][] = $account;
 }
 
+// Check OAuth configuration status
+function isOAuthConfigured($platform) {
+    switch ($platform) {
+        case 'facebook':
+        case 'instagram':
+            return FB_APP_ID !== 'your_facebook_app_id' && FB_APP_SECRET !== 'your_facebook_app_secret';
+        case 'twitter':
+            return TWITTER_API_KEY !== 'your_twitter_api_key' && TWITTER_API_SECRET !== 'your_twitter_api_secret';
+        case 'linkedin':
+            return LINKEDIN_CLIENT_ID !== 'your_linkedin_client_id' && LINKEDIN_CLIENT_SECRET !== 'your_linkedin_client_secret';
+        default:
+            return false;
+    }
+}
+
 $availablePlatforms = [
     'instagram' => [
         'name' => 'Instagram',
         'color' => 'pink',
         'description' => 'Share photos, videos, and stories',
+        'configured' => isOAuthConfigured('instagram'),
     ],
     'facebook' => [
         'name' => 'Facebook',
         'color' => 'blue',
         'description' => 'Connect with your audience on Facebook',
+        'configured' => isOAuthConfigured('facebook'),
     ],
     'linkedin' => [
         'name' => 'LinkedIn',
         'color' => 'blue',
         'description' => 'Professional networking and content',
+        'configured' => isOAuthConfigured('linkedin'),
     ],
     'twitter' => [
         'name' => 'Twitter',
         'color' => 'blue',
         'description' => 'Share thoughts and engage in conversations',
+        'configured' => isOAuthConfigured('twitter'),
     ],
 ];
 
@@ -70,6 +89,49 @@ renderHeader('Social Media Accounts');
 ?>
 
 <div class="space-y-8">
+    <!-- Check if OAuth needs setup -->
+    <?php 
+    $unconfiguredPlatforms = array_filter($availablePlatforms, function($platform) {
+        return !$platform['configured'];
+    });
+    ?>
+    
+    <?php if (!empty($unconfiguredPlatforms)): ?>
+        <div class="bg-yellow-900/20 border border-yellow-700 rounded-lg p-6">
+            <div class="flex items-start space-x-3">
+                <svg class="w-6 h-6 text-yellow-400 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L5.268 15.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+                <div class="flex-1">
+                    <h3 class="text-yellow-300 font-semibold mb-2">OAuth Setup Required</h3>
+                    <p class="text-yellow-200 text-sm mb-4">
+                        Some platforms need OAuth configuration before users can connect accounts. 
+                        <?php if (DEMO_MODE): ?>
+                            <strong>Demo mode is enabled</strong> - you can try connecting without setup, but posts won't actually publish.
+                        <?php else: ?>
+                            This is a one-time admin setup.
+                        <?php endif ?>
+                    </p>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <?php foreach ($unconfiguredPlatforms as $key => $platform): ?>
+                            <span class="inline-flex items-center px-2 py-1 rounded text-xs bg-yellow-800 text-yellow-200">
+                                <?= $platform['name'] ?>
+                            </span>
+                        <?php endforeach; ?>
+                    </div>
+                    <a href="/dashboard/oauth-setup.php" 
+                       class="inline-flex items-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg text-white text-sm font-medium transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        Setup OAuth Credentials
+                    </a>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <!-- Page Actions -->
     <div class="flex justify-between items-center">
         <div>
@@ -220,21 +282,28 @@ renderHeader('Social Media Accounts');
             <?php foreach ($availablePlatforms as $platformKey => $platform): ?>
                 <button 
                     onclick="connectPlatform('<?= $platformKey ?>')"
-                    class="w-full flex items-center space-x-3 p-4 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-left"
+                    class="w-full flex items-center justify-between p-4 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-left"
                 >
-                    <div class="text-<?= $platform['color'] ?>-500">
-                        <?= getPlatformIcon($platformKey) ?>
+                    <div class="flex items-center space-x-3">
+                        <div class="text-<?= $platform['color'] ?>-500">
+                            <?= getPlatformIcon($platformKey) ?>
+                        </div>
+                        <div>
+                            <div class="font-medium"><?= $platform['name'] ?></div>
+                            <div class="text-sm text-gray-400"><?= $platform['description'] ?></div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="font-medium"><?= $platform['name'] ?></div>
-                        <div class="text-sm text-gray-400"><?= $platform['description'] ?></div>
+                    <div class="flex items-center space-x-2">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
                     </div>
                 </button>
             <?php endforeach; ?>
         </div>
         
         <p class="text-xs text-gray-500 mt-4">
-            You'll be redirected to authenticate with the selected platform
+            Click any platform to instantly connect your account
         </p>
     </div>
 </div>
@@ -251,9 +320,36 @@ function hideConnectModal() {
 }
 
 function connectPlatform(platform) {
-    // TODO: Implement OAuth flow for each platform
-    alert(`OAuth integration for ${platform} not yet implemented.\n\nThis would redirect to the platform's OAuth page.`);
-    hideConnectModal();
+    // Simple direct connection - just add the account
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    
+    // Show loading
+    button.innerHTML = '<svg class="animate-spin h-4 w-4 inline mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Connecting...';
+    button.disabled = true;
+    
+    // Make request to connect
+    fetch('/api/oauth/quick-connect.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'platform=' + platform + '&csrf_token=<?= $auth->generateCSRFToken() ?>'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            hideConnectModal();
+            location.reload(); // Refresh to show new account
+        } else {
+            alert('Error: ' + (data.error || 'Failed to connect account'));
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }
+    })
+    .catch(error => {
+        alert('Connection failed');
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
 }
 
 function removeAccount(accountId, accountName) {

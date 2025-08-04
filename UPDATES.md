@@ -548,6 +548,77 @@ ini_set('session.cookie_samesite', 'Lax'); // Allow for cross-site navigation
 - Clean, modern list appearance without radio buttons
 - Better use of space and improved readability
 
+### Session 9: OAuth Setup Workflow & Settings Cleanup (2025-08-04)
+
+- **6:00 PM**: Fixed Client Settings Duplication Issue
+  - Resolved HTML structure bug where client settings appeared in all tabs
+  - Moved client settings inside Profile tab container properly
+  - Fixed missing closing div tags that caused content bleeding
+  
+- **6:05 PM**: Implemented Comprehensive Reset Functionality
+  - Fixed foreign key constraint errors during database reset
+  - Added proper table deletion order to avoid constraint violations
+  - Implemented `SET FOREIGN_KEY_CHECKS = 0/1` for safe table dropping
+  - Added all missing tables to reset: `brands`, `user_actions`, `sessions`, `retry_queue`
+  - Total of 11 tables now properly deleted: `retry_queue`, `user_actions`, `logs`, `posts`, `media`, `accounts`, `brands`, `sessions`, `platform_limits`, `clients`, `users`
+
+- **6:10 PM**: Fixed Database Schema Mismatches
+  - Corrected password column name from `password` to `password_hash` in all queries
+  - Fixed admin account creation in installer to use proper schema columns
+  - Fixed password change functionality in settings to use `password_hash`
+  - Added required `name` field to admin user creation
+
+- **6:15 PM**: Cleaned Up OAuth Setup Workflow
+  - **Removed OAuth from Settings**: Completely removed OAuth tab and functionality from settings page
+  - **Created Dedicated OAuth Setup Page**: `/dashboard/oauth-setup.php` with comprehensive setup interface
+  - **Made OAuth Setup Conditional**: Only appears in navigation menu when not fully configured
+  - **Smart Menu Logic**: OAuth Setup disappears automatically once all platforms (Facebook, Twitter, LinkedIn) are configured
+  - **Clean Settings Page**: Now only contains Profile, System Info, and Reset & Reinstall tabs
+
+- **6:20 PM**: Enhanced OAuth Setup Experience
+  - Step-by-step platform setup with visual indicators (Configured/Setup Needed)
+  - Detailed instructions for each platform with redirect URLs
+  - Automatic redirect to dashboard when all platforms are configured
+  - Progress tracking showing "X of 3 platforms configured"
+  - Links to developer consoles for each platform
+  - Form validation and success/error messaging
+
+### Technical Changes Made
+
+#### Files Modified:
+1. **dashboard/settings.php** - Removed OAuth tab, functionality, and platform arrays; fixed client settings positioning
+2. **dashboard/oauth-setup.php** - Created comprehensive OAuth setup page with all platform configurations
+3. **includes/layout.php** - Made OAuth Setup menu item conditional based on configuration status
+4. **installer.php** - Fixed admin account creation column names and default host
+5. **installer/step1-database.php** - Removed MAMP-specific guidance, returned to production defaults
+
+#### Database Fixes:
+- Fixed `password` vs `password_hash` column name consistency
+- Added proper foreign key constraint handling in reset functionality
+- Included all 11 tables in reset process
+
+### OAuth Setup Workflow
+✅ **Before Configuration**: OAuth Setup appears in menu
+✅ **During Setup**: Users configure platforms one by one
+✅ **After Full Setup**: OAuth Setup automatically disappears from menu
+✅ **Settings Page**: Clean interface without OAuth clutter
+✅ **Reset Functionality**: Properly deletes all data and tables
+
+### Current Features Status
+✅ **Database Operations**: All CRUD operations working with proper column names
+✅ **Reset & Reinstall**: Complete data wipe with foreign key handling
+✅ **OAuth Setup**: Dedicated page with conditional menu visibility
+✅ **Settings Management**: Profile, client settings, system info, password changes
+✅ **Installation Process**: Fixed column naming and admin account creation
+
+### User Experience Improvements
+- OAuth setup only visible when needed
+- Clean settings interface without permanent OAuth clutter
+- Visual progress indicators during OAuth configuration
+- Automatic menu updates based on configuration status
+- Comprehensive platform setup instructions
+- One-click access to developer consoles
+
 ---
 
-Last Updated: 2025-08-04 3:33 PM
+Last Updated: 2025-08-04 6:20 PM

@@ -30,7 +30,9 @@ ghst_ is a powerful, mobile-responsive multi-client social media scheduling plat
 
 ### 3. Social Media Integrations
 - Instagram, Facebook, LinkedIn, Twitter/X, Threads support
-- OAuth-based authentication (placeholders ready)
+- **Dedicated OAuth Setup Page** with step-by-step platform configuration
+- **Conditional OAuth Setup** - only appears in menu until all platforms configured
+- OAuth-based authentication with comprehensive setup instructions
 - Token management with expiry alerts
 - Platform-specific character limits and validation
 
@@ -61,6 +63,14 @@ ghst_ is a powerful, mobile-responsive multi-client social media scheduling plat
 - Interactive analytics dashboard with charts
 - Performance metrics and engagement tracking
 - Activity audit trail
+
+### 8. Settings & Configuration
+- **Tabbed Settings Interface** with Profile, System Info, and Reset & Reinstall tabs
+- **Client Settings Management** - update client name, timezone, and notes
+- **Password Management** - secure password changes with validation
+- **Complete Reset Functionality** - wipe all data and reinstall cleanly
+- **Foreign Key Safe Reset** - proper table deletion order without constraint errors
+- **System Information Display** - view app configuration and database details
 
 ## Installation
 
@@ -114,7 +124,8 @@ ghst_ is a powerful, mobile-responsive multi-client social media scheduling plat
     media.php     # Media library
     analytics.php # Analytics dashboard
     accounts.php  # Social accounts
-    settings.php  # User settings
+    settings.php  # User settings (Profile, System Info, Reset)
+    oauth-setup.php # OAuth platform configuration (conditional)
     switch-client.php # Client management
   /uploads        # User uploaded media
   /api           # API endpoints
@@ -125,9 +136,11 @@ ghst_ is a powerful, mobile-responsive multi-client social media scheduling plat
     functions.php # Helper functions
     layout.php   # Layout components
   /db            # Database schema
+  /installer     # Installation wizard steps
   index.php      # Entry point
   login.php      # Login page
   logout.php     # Logout handler
+  installer.php  # Complete setup installer
   cron.php       # Scheduled post processor
   config.php     # Configuration file
   .htaccess      # Security rules
@@ -167,24 +180,45 @@ ghst_ is a powerful, mobile-responsive multi-client social media scheduling plat
 - Haptic feedback support
 - Safe area compatibility (iPhone notch, etc.)
 
+## OAuth Setup & Installation
+- **Comprehensive 4-Step Installer** - database, admin account, OAuth, completion
+- **Smart OAuth Workflow** - setup page only appears until all platforms configured
+- **Visual Setup Progress** - clear indicators for configured vs setup needed platforms
+- **Developer Console Links** - direct access to platform developer pages
+- **Automatic Menu Updates** - OAuth setup disappears when configuration complete
+- **Complete Reset Feature** - safely wipe all data and restart installation
+
 ## Troubleshooting
 
 ### Common Issues
 1. **Database connection failed**: 
-   - For MAMP: Change DB_HOST to '127.0.0.1' instead of 'localhost'
-   - Check DB_PORT (usually 8889 for MAMP)
+   - Change DB_HOST to '127.0.0.1' instead of 'localhost' if needed
+   - Check DB_PORT (usually 3306, 8889 for MAMP)
 
-2. **Mobile login issues**:
+2. **Admin account creation failed**:
+   - Ensure database schema uses `password_hash` column, not `password`
+   - Run installer which handles proper column names
+
+3. **Reset installation fails**:
+   - Check for foreign key constraint errors
+   - Use the built-in reset feature which handles table deletion order properly
+
+4. **OAuth setup issues**:
+   - Use the dedicated OAuth setup page (appears in menu when needed)
+   - Verify redirect URLs match exactly with platform developer settings
+   - Check that all three platforms (Facebook, Twitter, LinkedIn) are configured
+
+5. **Mobile login issues**:
    - Set `session.cookie_secure` to 0 for HTTP development
    - Use `session.cookie_samesite` = 'Lax' for cross-site compatibility
 
-3. **Cron not running**: Check cPanel error logs
+6. **Settings page issues**:
+   - Client settings should only appear in Profile tab
+   - OAuth setup should not be in settings (it has its own page)
 
-4. **OAuth failures**: Verify redirect URLs match
+7. **Upload errors**: Check file permissions (755 for uploads folder)
 
-5. **Upload errors**: Check file permissions (755 for uploads folder)
-
-6. **Token expired**: Re-authenticate in settings
+8. **Token expired**: Re-authenticate through OAuth setup page
 
 ## Mobile Testing
 
