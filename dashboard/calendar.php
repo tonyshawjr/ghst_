@@ -93,20 +93,20 @@ $monthName = date('F Y', $firstDay);
 renderHeader('Calendar');
 ?>
 
-<div class="space-y-6">
+<div class="space-y-4 lg:space-y-6">
     <!-- Page Header -->
-    <div class="flex justify-between items-center">
+    <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center space-y-4 lg:space-y-0">
         <div>
-            <h3 class="text-lg font-semibold text-gray-200">Content Calendar</h3>
-            <p class="text-gray-400 text-sm mt-1">View and manage your scheduled posts</p>
+            <h3 class="text-base lg:text-lg font-semibold text-gray-200">Content Calendar</h3>
+            <p class="text-gray-400 text-xs lg:text-sm mt-1">View and manage your scheduled posts</p>
         </div>
         
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center justify-between lg:justify-end lg:space-x-4">
             <!-- Month Navigation -->
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center space-x-1 lg:space-x-2">
                 <a 
                     href="?month=<?= $prevMonth ?>&year=<?= $prevYear ?>"
-                    class="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+                    class="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors touch-target touch-feedback"
                     title="Previous month"
                 >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,11 +114,11 @@ renderHeader('Calendar');
                     </svg>
                 </a>
                 
-                <h2 class="text-xl font-semibold min-w-[200px] text-center"><?= $monthName ?></h2>
+                <h2 class="text-base lg:text-xl font-semibold min-w-[140px] lg:min-w-[200px] text-center"><?= $monthName ?></h2>
                 
                 <a 
                     href="?month=<?= $nextMonth ?>&year=<?= $nextYear ?>"
-                    class="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+                    class="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors touch-target touch-feedback"
                     title="Next month"
                 >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,7 +128,7 @@ renderHeader('Calendar');
             </div>
             
             <!-- View Toggle -->
-            <div class="flex bg-gray-900 rounded-lg p-1">
+            <div class="hidden lg:flex bg-gray-900 rounded-lg p-1">
                 <button class="px-3 py-1 bg-purple-600 text-white rounded text-sm font-medium">
                     Month
                 </button>
@@ -140,7 +140,7 @@ renderHeader('Calendar');
             <!-- Today Button -->
             <a 
                 href="?month=<?= date('n') ?>&year=<?= date('Y') ?>"
-                class="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-white text-sm transition-colors"
+                class="px-3 lg:px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-white text-xs lg:text-sm transition-colors touch-target touch-feedback"
             >
                 Today
             </a>
@@ -148,7 +148,7 @@ renderHeader('Calendar');
     </div>
 
     <!-- Calendar Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         <?php
         $statusCounts = array_count_values(array_column($posts, 'status'));
         $stats = [
@@ -159,9 +159,9 @@ renderHeader('Calendar');
         ];
         ?>
         <?php foreach ($stats as $stat): ?>
-            <div class="bg-gray-900 rounded-lg p-4 border border-gray-800">
-                <div class="text-2xl font-bold text-<?= $stat['color'] ?>-400"><?= $stat['value'] ?></div>
-                <div class="text-sm text-gray-400"><?= $stat['label'] ?></div>
+            <div class="bg-gray-900 rounded-lg p-3 lg:p-4 border border-gray-800 touch-feedback">
+                <div class="text-xl lg:text-2xl font-bold text-<?= $stat['color'] ?>-400"><?= $stat['value'] ?></div>
+                <div class="text-xs lg:text-sm text-gray-400"><?= $stat['label'] ?></div>
             </div>
         <?php endforeach; ?>
     </div>
@@ -172,10 +172,12 @@ renderHeader('Calendar');
         <div class="grid grid-cols-7 border-b border-gray-800">
             <?php 
             $dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            foreach ($dayNames as $dayName): 
+            $mobileDayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+            foreach ($dayNames as $index => $dayName): 
             ?>
-                <div class="p-4 text-center text-sm font-medium text-gray-400 border-r border-gray-800 last:border-r-0">
-                    <?= $dayName ?>
+                <div class="p-2 lg:p-4 text-center text-sm font-medium text-gray-400 border-r border-gray-800 last:border-r-0">
+                    <span class="lg:hidden"><?= $mobileDayNames[$index] ?></span>
+                    <span class="hidden lg:inline"><?= $dayName ?></span>
                 </div>
             <?php endforeach; ?>
         </div>
@@ -188,22 +190,22 @@ renderHeader('Calendar');
                 $isNewWeek = $index % 7 === 0;
                 if ($isNewWeek && $index > 0) $weekRow++;
             ?>
-                <div class="min-h-[120px] p-2 border-r border-gray-800 border-b border-gray-800 last:border-r-0 <?= $weekRow >= 5 ? 'last:border-b-0' : '' ?> <?= $day === null ? 'bg-gray-950' : ($day['isToday'] ? 'bg-purple-900/20' : 'bg-gray-900') ?>">
+                <div class="min-h-[80px] lg:min-h-[120px] p-1 lg:p-2 border-r border-gray-800 border-b border-gray-800 last:border-r-0 <?= $weekRow >= 5 ? 'last:border-b-0' : '' ?> <?= $day === null ? 'bg-gray-950' : ($day['isToday'] ? 'bg-purple-900/20' : 'bg-gray-900') ?> relative group">
                     <?php if ($day !== null): ?>
                         <!-- Day Number -->
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="text-sm font-medium <?= $day['isToday'] ? 'text-purple-400' : ($day['isPast'] ? 'text-gray-500' : 'text-gray-300') ?>">
+                        <div class="flex items-center justify-between mb-1 lg:mb-2">
+                            <span class="text-xs lg:text-sm font-medium <?= $day['isToday'] ? 'text-purple-400' : ($day['isPast'] ? 'text-gray-500' : 'text-gray-300') ?>">
                                 <?= $day['day'] ?>
                             </span>
                             <?php if ($day['isToday']): ?>
-                                <span class="w-2 h-2 bg-purple-500 rounded-full"></span>
+                                <span class="w-1.5 h-1.5 lg:w-2 lg:h-2 bg-purple-500 rounded-full"></span>
                             <?php endif; ?>
                         </div>
 
                         <!-- Posts for this day -->
-                        <div class="space-y-1">
+                        <div class="space-y-0.5 lg:space-y-1">
                             <?php 
-                            $displayPosts = array_slice($day['posts'], 0, 3); // Show max 3 posts
+                            $displayPosts = array_slice($day['posts'], 0, 2); // Show max 2 posts on mobile, 3 on desktop
                             $remainingCount = count($day['posts']) - count($displayPosts);
                             ?>
                             
@@ -219,24 +221,35 @@ renderHeader('Calendar');
                                 $platforms = json_decode($post['platforms_json'], true) ?: [];
                                 ?>
                                 <div 
-                                    class="p-2 bg-<?= $statusColor ?>-900/50 border border-<?= $statusColor ?>-700 rounded text-xs cursor-pointer hover:bg-<?= $statusColor ?>-900/70 transition-colors"
+                                    class="p-1 lg:p-2 bg-<?= $statusColor ?>-900/50 border border-<?= $statusColor ?>-700 rounded text-xs cursor-pointer hover:bg-<?= $statusColor ?>-900/70 transition-colors touch-feedback"
                                     onclick="viewPost(<?= $post['id'] ?>)"
                                     title="<?= sanitize($post['content']) ?>"
                                 >
-                                    <div class="flex items-center justify-between mb-1">
-                                        <span class="text-<?= $statusColor ?>-300 font-medium text-[10px] uppercase">
+                                    <div class="flex items-center justify-between mb-0.5 lg:mb-1">
+                                        <span class="text-<?= $statusColor ?>-300 font-medium text-[8px] lg:text-[10px] uppercase">
                                             <?= $post['status'] ?>
                                         </span>
-                                        <span class="text-gray-400 text-[10px]">
+                                        <span class="text-gray-400 text-[8px] lg:text-[10px]">
                                             <?= date('g:i A', strtotime($post['schedule_time'])) ?>
                                         </span>
                                     </div>
                                     
-                                    <div class="text-gray-200 mb-1 line-clamp-2">
-                                        <?= truncateText(sanitize($post['content']), 50) ?>
+                                    <div class="text-gray-200 mb-0.5 lg:mb-1 line-clamp-1 lg:line-clamp-2">
+                                        <?= truncateText(sanitize($post['content']), 30) ?>
                                     </div>
                                     
-                                    <div class="flex space-x-1">
+                                    <div class="flex space-x-0.5 lg:space-x-1 lg:hidden">
+                                        <?php foreach (array_slice($platforms, 0, 2) as $platform): ?>
+                                            <div class="text-gray-400 w-2 h-2">
+                                                <?= getPlatformIcon($platform) ?>
+                                            </div>
+                                        <?php endforeach; ?>
+                                        <?php if (count($platforms) > 2): ?>
+                                            <span class="text-gray-500 text-[8px]">+<?= count($platforms) - 2 ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                    
+                                    <div class="hidden lg:flex space-x-1">
                                         <?php foreach (array_slice($platforms, 0, 3) as $platform): ?>
                                             <div class="text-gray-400 w-3 h-3">
                                                 <?= getPlatformIcon($platform) ?>
@@ -250,10 +263,10 @@ renderHeader('Calendar');
                             <?php endforeach; ?>
                             
                             <?php if ($remainingCount > 0): ?>
-                                <div class="p-1 text-center">
+                                <div class="p-0.5 lg:p-1 text-center">
                                     <button 
                                         onclick="showDayPosts('<?= $day['date'] ?>')"
-                                        class="text-gray-400 hover:text-white text-[10px] font-medium"
+                                        class="text-gray-400 hover:text-white text-[8px] lg:text-[10px] font-medium touch-target touch-feedback"
                                     >
                                         +<?= $remainingCount ?> more
                                     </button>
@@ -265,10 +278,11 @@ renderHeader('Calendar');
                         <?php if (!$day['isPast']): ?>
                             <button 
                                 onclick="createPostForDate('<?= $day['date'] ?>')"
-                                class="w-full mt-1 p-1 text-gray-500 hover:text-purple-400 hover:bg-purple-900/20 rounded text-[10px] font-medium transition-colors opacity-0 hover:opacity-100 group-hover:opacity-100"
+                                class="w-full mt-0.5 lg:mt-1 p-1 text-gray-500 hover:text-purple-400 hover:bg-purple-900/20 rounded text-[8px] lg:text-[10px] font-medium transition-colors opacity-0 lg:hover:opacity-100 lg:group-hover:opacity-100 touch-target touch-feedback"
                                 title="Add post for this date"
                             >
-                                + Add Post
+                                <span class="lg:hidden">+</span>
+                                <span class="hidden lg:inline">+ Add Post</span>
                             </button>
                         <?php endif; ?>
                     <?php endif; ?>
@@ -299,8 +313,8 @@ renderHeader('Calendar');
 </div>
 
 <!-- Day Posts Modal -->
-<div id="dayPostsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-gray-900 rounded-lg border border-gray-800 p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+<div id="dayPostsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-gray-900 rounded-lg border border-gray-800 p-4 lg:p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
         <div class="flex items-center justify-between mb-6">
             <h3 id="dayPostsTitle" class="text-lg font-semibold">Posts for [Date]</h3>
             <button onclick="hideDayPostsModal()" class="text-gray-400 hover:text-white">
@@ -317,6 +331,13 @@ renderHeader('Calendar');
 </div>
 
 <style>
+.line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
 .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -326,6 +347,18 @@ renderHeader('Calendar');
 
 .calendar-day:hover .add-post-btn {
     opacity: 1;
+}
+
+/* Mobile calendar improvements */
+@media (max-width: 768px) {
+    .calendar-day {
+        min-height: 60px;
+    }
+    
+    .calendar-post {
+        font-size: 8px;
+        padding: 2px;
+    }
 }
 </style>
 

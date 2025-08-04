@@ -61,70 +61,70 @@ $recentActivity = $stmt->fetchAll();
 renderHeader('Dashboard');
 ?>
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6 mb-6 lg:mb-8">
     <!-- Stats Cards -->
-    <div class="bg-gray-900 rounded-lg p-6 border border-gray-800">
+    <div class="bg-gray-900 rounded-lg p-4 lg:p-6 border border-gray-800 touch-feedback">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-400 text-sm">Total Posts</p>
-                <p class="text-3xl font-bold mt-1"><?= number_format($stats['total_posts']) ?></p>
+                <p class="text-gray-400 text-xs lg:text-sm">Total Posts</p>
+                <p class="text-2xl lg:text-3xl font-bold mt-1"><?= number_format($stats['total_posts']) ?></p>
             </div>
-            <svg class="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-6 h-6 lg:w-8 lg:h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
             </svg>
         </div>
     </div>
     
-    <div class="bg-gray-900 rounded-lg p-6 border border-gray-800">
+    <div class="bg-gray-900 rounded-lg p-4 lg:p-6 border border-gray-800 touch-feedback">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-400 text-sm">Scheduled</p>
-                <p class="text-3xl font-bold mt-1"><?= number_format($stats['scheduled_posts']) ?></p>
+                <p class="text-gray-400 text-xs lg:text-sm">Scheduled</p>
+                <p class="text-2xl lg:text-3xl font-bold mt-1"><?= number_format($stats['scheduled_posts']) ?></p>
             </div>
-            <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-6 h-6 lg:w-8 lg:h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
         </div>
     </div>
     
-    <div class="bg-gray-900 rounded-lg p-6 border border-gray-800">
+    <div class="bg-gray-900 rounded-lg p-4 lg:p-6 border border-gray-800 touch-feedback">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-400 text-sm">Published (30d)</p>
-                <p class="text-3xl font-bold mt-1"><?= number_format($stats['published_posts']) ?></p>
+                <p class="text-gray-400 text-xs lg:text-sm">Published (30d)</p>
+                <p class="text-2xl lg:text-3xl font-bold mt-1"><?= number_format($stats['published_posts']) ?></p>
             </div>
-            <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-6 h-6 lg:w-8 lg:h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
         </div>
     </div>
     
-    <div class="bg-gray-900 rounded-lg p-6 border border-gray-800">
+    <div class="bg-gray-900 rounded-lg p-4 lg:p-6 border border-gray-800 touch-feedback">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-400 text-sm">Connected</p>
-                <p class="text-3xl font-bold mt-1"><?= number_format($stats['connected_accounts']) ?></p>
+                <p class="text-gray-400 text-xs lg:text-sm">Connected</p>
+                <p class="text-2xl lg:text-3xl font-bold mt-1"><?= number_format($stats['connected_accounts']) ?></p>
             </div>
-            <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-6 h-6 lg:w-8 lg:h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
             </svg>
         </div>
     </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
     <!-- Recent Posts -->
     <div class="bg-gray-900 rounded-lg border border-gray-800">
-        <div class="p-6 border-b border-gray-800">
-            <h3 class="text-lg font-semibold">Recent Posts</h3>
+        <div class="p-4 lg:p-6 border-b border-gray-800">
+            <h3 class="text-base lg:text-lg font-semibold">Recent Posts</h3>
         </div>
-        <div class="p-6">
+        <div class="p-4 lg:p-6">
             <?php if (empty($recentPosts)): ?>
                 <p class="text-gray-500 text-center py-8">No posts yet. Create your first post!</p>
             <?php else: ?>
                 <div class="space-y-4">
                     <?php foreach ($recentPosts as $post): ?>
-                    <div class="flex items-start space-x-4 p-4 bg-gray-800 rounded-lg">
+                    <div class="flex items-start space-x-3 lg:space-x-4 p-3 lg:p-4 bg-gray-800 rounded-lg touch-feedback">
                         <div class="flex-1">
                             <p class="text-sm"><?= truncateText(sanitize($post['content']), 100) ?></p>
                             <div class="flex items-center space-x-4 mt-2">
@@ -143,10 +143,10 @@ renderHeader('Dashboard');
     
     <!-- Recent Activity -->
     <div class="bg-gray-900 rounded-lg border border-gray-800">
-        <div class="p-6 border-b border-gray-800">
-            <h3 class="text-lg font-semibold">Recent Activity</h3>
+        <div class="p-4 lg:p-6 border-b border-gray-800">
+            <h3 class="text-base lg:text-lg font-semibold">Recent Activity</h3>
         </div>
-        <div class="p-6">
+        <div class="p-4 lg:p-6">
             <?php if (empty($recentActivity)): ?>
                 <p class="text-gray-500 text-center py-8">No activity yet.</p>
             <?php else: ?>
@@ -167,32 +167,32 @@ renderHeader('Dashboard');
 </div>
 
 <!-- Quick Actions -->
-<div class="mt-8 bg-gray-900 rounded-lg border border-gray-800 p-6">
-    <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <a href="/dashboard/posts.php?action=new" class="flex items-center justify-center space-x-2 p-4 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<div class="mt-6 lg:mt-8 bg-gray-900 rounded-lg border border-gray-800 p-4 lg:p-6">
+    <h3 class="text-base lg:text-lg font-semibold mb-4">Quick Actions</h3>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+        <a href="/dashboard/posts.php?action=new" class="flex flex-col lg:flex-row items-center justify-center lg:space-x-2 p-4 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors touch-target touch-feedback">
+            <svg class="w-5 h-5 mb-1 lg:mb-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
-            <span>New Post</span>
+            <span class="text-sm lg:text-base">New Post</span>
         </a>
-        <a href="/dashboard/accounts.php?action=connect" class="flex items-center justify-center space-x-2 p-4 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a href="/dashboard/accounts.php?action=connect" class="flex flex-col lg:flex-row items-center justify-center lg:space-x-2 p-4 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors touch-target touch-feedback">
+            <svg class="w-5 h-5 mb-1 lg:mb-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
             </svg>
-            <span>Connect Account</span>
+            <span class="text-sm lg:text-base">Connect Account</span>
         </a>
-        <a href="/dashboard/media.php?action=upload" class="flex items-center justify-center space-x-2 p-4 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a href="/dashboard/media.php?action=upload" class="flex flex-col lg:flex-row items-center justify-center lg:space-x-2 p-4 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors touch-target touch-feedback">
+            <svg class="w-5 h-5 mb-1 lg:mb-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
             </svg>
-            <span>Upload Media</span>
+            <span class="text-sm lg:text-base">Upload Media</span>
         </a>
-        <a href="/dashboard/calendar.php" class="flex items-center justify-center space-x-2 p-4 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a href="/dashboard/calendar.php" class="flex flex-col lg:flex-row items-center justify-center lg:space-x-2 p-4 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors touch-target touch-feedback">
+            <svg class="w-5 h-5 mb-1 lg:mb-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
             </svg>
-            <span>View Calendar</span>
+            <span class="text-sm lg:text-base">View Calendar</span>
         </a>
     </div>
 </div>

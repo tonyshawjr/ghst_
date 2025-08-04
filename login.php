@@ -59,6 +59,13 @@ $csrfToken = $auth->generateCSRFToken();
             from, to { border-color: transparent }
             50% { border-color: #8b5cf6; }
         }
+        /* Mobile-first responsive styles */
+        @media (max-width: 768px) {
+            input, button {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+        }
+        .touch-target { min-height: 44px; }
     </style>
 </head>
 <body class="h-full bg-black text-white">
@@ -95,16 +102,17 @@ $csrfToken = $auth->generateCSRFToken();
         </div>
         
         <!-- Right Panel -->
-        <div class="flex-1 flex items-center justify-center p-8 bg-black">
+        <div class="flex-1 flex items-center justify-center p-4 sm:p-8 bg-black">
             <div class="w-full max-w-md">
                 <div class="text-center mb-8 lg:hidden">
                     <h1 class="text-4xl font-bold">
                         <span class="text-purple-500">*</span> ghst_
                     </h1>
+                    <p class="text-gray-400 text-sm mt-2">Multi-client social media scheduling</p>
                 </div>
                 
-                <div class="bg-gray-900 rounded-lg p-8 border border-gray-800">
-                    <h2 class="text-2xl font-bold mb-6">Sign in</h2>
+                <div class="bg-gray-900 rounded-lg p-6 sm:p-8 border border-gray-800">
+                    <h2 class="text-xl sm:text-2xl font-bold mb-6">Sign in</h2>
                     
                     <?php if ($error): ?>
                         <div class="bg-red-900/20 border border-red-500 text-red-400 px-4 py-3 rounded mb-6">
@@ -122,7 +130,8 @@ $csrfToken = $auth->generateCSRFToken();
                                 id="email" 
                                 name="email" 
                                 required
-                                class="w-full px-4 py-3 bg-black border border-gray-700 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
+                                autocomplete="email"
+                                class="w-full px-4 py-3 bg-black border border-gray-700 rounded-lg focus:outline-none focus:border-purple-500 transition-colors touch-target"
                                 placeholder="admin@ghst.app"
                             >
                         </div>
@@ -134,7 +143,8 @@ $csrfToken = $auth->generateCSRFToken();
                                 id="password" 
                                 name="password" 
                                 required
-                                class="w-full px-4 py-3 bg-black border border-gray-700 rounded-lg focus:outline-none focus:border-purple-500 transition-colors"
+                                autocomplete="current-password"
+                                class="w-full px-4 py-3 bg-black border border-gray-700 rounded-lg focus:outline-none focus:border-purple-500 transition-colors touch-target"
                                 placeholder="••••••••"
                             >
                         </div>
@@ -149,7 +159,7 @@ $csrfToken = $auth->generateCSRFToken();
                         
                         <button 
                             type="submit"
-                            class="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition-colors"
+                            class="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition-colors touch-target active:scale-95 transform"
                         >
                             Sign in
                         </button>
@@ -167,7 +177,7 @@ $csrfToken = $auth->generateCSRFToken();
                         
                         <button 
                             type="button"
-                            class="mt-4 w-full py-3 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2"
+                            class="mt-4 w-full py-3 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2 touch-target active:scale-95 transform"
                             onclick="alert('Google OAuth coming soon!')"
                         >
                             <svg class="w-5 h-5" viewBox="0 0 24 24">
