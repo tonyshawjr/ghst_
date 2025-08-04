@@ -62,8 +62,8 @@ ghst_ is a powerful multi-client social media scheduling platform designed for a
 
 1. **Upload Files**
    ```bash
-   # Upload the ghst_ folder to your cPanel home directory
-   # Move public_html contents to your web root
+   # Upload all files to your domain/subdomain root directory
+   # No need to move files - everything is already in the correct structure
    ```
 
 2. **Database Setup**
@@ -81,23 +81,22 @@ ghst_ is a powerful multi-client social media scheduling platform designed for a
 4. **Cron Job Setup**
    ```bash
    # Add to cPanel cron jobs (every 5 minutes)
-   */5 * * * * /usr/bin/php /home/username/public_html/cron.php
+   */5 * * * * /usr/bin/php /path/to/your/domain/cron.php
    ```
 
 5. **Permissions**
    ```bash
-   chmod 755 public_html/uploads
+   chmod 755 uploads
    chmod 644 config.php
    ```
 
 ## Directory Structure
 ```
 /ghst_
-  /public_html
-    /dashboard      # Main dashboard files
-    /uploads        # User uploaded media
-    /api           # API endpoints
-    /assets        # CSS, JS, images
+  /dashboard      # Main dashboard files
+  /uploads        # User uploaded media
+  /api           # API endpoints (if implemented)
+  /assets        # CSS, JS, images (if implemented)
     index.php      # Entry point
     cron.php       # Scheduled post processor
   /includes        # PHP includes and classes
