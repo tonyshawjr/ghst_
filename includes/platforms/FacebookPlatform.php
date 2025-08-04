@@ -14,7 +14,7 @@ class FacebookPlatform extends Platform {
     
     public function getAuthUrl($redirectUri, $state = null) {
         $params = [
-            'client_id' => FACEBOOK_CLIENT_ID,
+            'client_id' => FB_APP_ID,
             'redirect_uri' => $redirectUri,
             'scope' => 'pages_manage_posts,pages_read_engagement,pages_show_list',
             'response_type' => 'code',
@@ -27,13 +27,13 @@ class FacebookPlatform extends Platform {
         return $this->authUrl . '?' . http_build_query($params);
     }
     
-    public function handleCallback($code, $state = null) {
+    public function handleCallback($code, $state = null, $redirectUri = null) {
         // Exchange code for access token
         $response = $this->makeApiRequest(
             $this->apiUrl . '/oauth/access_token?' . http_build_query([
-                'client_id' => FACEBOOK_CLIENT_ID,
-                'client_secret' => FACEBOOK_CLIENT_SECRET,
-                'redirect_uri' => FACEBOOK_REDIRECT_URI,
+                'client_id' => FB_APP_ID,
+                'client_secret' => FB_APP_SECRET,
+                'redirect_uri' => $redirectUri,
                 'code' => $code,
             ])
         );

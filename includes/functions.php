@@ -47,6 +47,14 @@ function uploadFile($file, $allowedTypes, $maxSize, $uploadPath) {
     return ['success' => true, 'filename' => $fileName, 'path' => $filePath];
 }
 
+function base64url_encode($data) {
+    return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+}
+
+function base64url_decode($data) {
+    return base64_decode(strtr($data, '-_', '+/') . str_repeat('=', 3 - (3 + strlen($data)) % 4));
+}
+
 function formatDate($date, $timezone = null) {
     $dt = new DateTime($date);
     if ($timezone) {

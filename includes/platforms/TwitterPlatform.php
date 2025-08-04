@@ -15,7 +15,7 @@ class TwitterPlatform extends Platform {
     public function getAuthUrl($redirectUri, $state = null) {
         $params = [
             'response_type' => 'code',
-            'client_id' => TWITTER_CLIENT_ID,
+            'client_id' => TWITTER_API_KEY,
             'redirect_uri' => $redirectUri,
             'scope' => 'tweet.read tweet.write users.read offline.access',
             'code_challenge_method' => 'S256',
@@ -35,7 +35,7 @@ class TwitterPlatform extends Platform {
         return base64url_encode(hash('sha256', $codeVerifier, true));
     }
     
-    public function handleCallback($code, $state = null) {
+    public function handleCallback($code, $state = null, $redirectUri = null) {
         $codeVerifier = $_SESSION['twitter_code_verifier'] ?? null;
         if (!$codeVerifier) {
             throw new Exception("Code verifier not found in session");
@@ -45,11 +45,11 @@ class TwitterPlatform extends Platform {
         $tokenData = [
             'grant_type' => 'authorization_code',
             'code' => $code,
-            'redirect_uri' => TWITTER_REDIRECT_URI,
+            'redirect_uri' => $redirectUri,
             'code_verifier' => $codeVerifier,
         ];
         
-        $credentials = base64_encode(TWITTER_CLIENT_ID . ':' . TWITTER_CLIENT_SECRET);
+        $credentials = base64_encode(TWITTER_API_KEY . ':' . TWITTER_API_SECRET);
         
         $response = $this->makeApiRequest(
             'https://api.twitter.com/2/oauth2/token',
@@ -93,7 +93,7 @@ class TwitterPlatform extends Platform {
             'refresh_token' => $this->account['refresh_token'],
         ];
         
-        $credentials = base64_encode(TWITTER_CLIENT_ID . ':' . TWITTER_CLIENT_SECRET);
+        $credentials = base64_encode(TWITTER_API_KEY . ':' . TWITTER_API_SECRET);
         
         $response = $this->makeApiRequest(
             'https://api.twitter.com/2/oauth2/token',

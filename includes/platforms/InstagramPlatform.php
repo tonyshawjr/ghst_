@@ -14,7 +14,7 @@ class InstagramPlatform extends Platform {
     
     public function getAuthUrl($redirectUri, $state = null) {
         $params = [
-            'client_id' => INSTAGRAM_CLIENT_ID,
+            'client_id' => FB_APP_ID,
             'redirect_uri' => $redirectUri,
             'scope' => 'user_profile,user_media',
             'response_type' => 'code',
@@ -27,13 +27,13 @@ class InstagramPlatform extends Platform {
         return $this->authUrl . '?' . http_build_query($params);
     }
     
-    public function handleCallback($code, $state = null) {
+    public function handleCallback($code, $state = null, $redirectUri = null) {
         // Exchange code for access token
         $tokenData = [
-            'client_id' => INSTAGRAM_CLIENT_ID,
-            'client_secret' => INSTAGRAM_CLIENT_SECRET,
+            'client_id' => FB_APP_ID,
+            'client_secret' => FB_APP_SECRET,
             'grant_type' => 'authorization_code',
-            'redirect_uri' => INSTAGRAM_REDIRECT_URI,
+            'redirect_uri' => $redirectUri,
             'code' => $code,
         ];
         
@@ -48,7 +48,7 @@ class InstagramPlatform extends Platform {
         $longLivedResponse = $this->makeApiRequest(
             $this->apiUrl . '/access_token?' . http_build_query([
                 'grant_type' => 'ig_exchange_token',
-                'client_secret' => INSTAGRAM_CLIENT_SECRET,
+                'client_secret' => FB_APP_SECRET,
                 'access_token' => $response['access_token'],
             ])
         );
