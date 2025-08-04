@@ -116,6 +116,157 @@ $csrfToken = $auth->generateCSRFToken();
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'JetBrains Mono', monospace; }
+        
+        /* View toggle styles */
+        .view-toggle-btn {
+            color: rgb(156 163 175);
+            transition: all 0.2s;
+        }
+        .view-toggle-btn.active {
+            background-color: rgb(147 51 234);
+            color: white;
+        }
+        
+        /* List view styles - completely different structure */
+        .list-view .client-grid {
+            display: block;
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+        
+        /* Hide all card styling in list view */
+        .list-view .client-card {
+            background: none !important;
+            border: none !important;
+            border-radius: 0.5rem !important;
+            padding: 1rem !important;
+            margin: 0.5rem 0 !important;
+            position: relative;
+        }
+        
+        /* Remove separator lines - using spacing instead */
+        .list-view .client-card::after {
+            display: none;
+        }
+        
+        .list-view label:last-of-type .client-card::after {
+            display: none;
+        }
+        
+        /* List item layout - two lines */
+        .list-view .client-card > div {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 0;
+        }
+        
+        /* Selected state in list view */
+        .list-view input:checked ~ .client-card {
+            background: rgb(147 51 234 / 0.1) !important;
+            border: 1px solid rgb(147 51 234 / 0.3) !important;
+            box-shadow: 0 0 0 1px rgb(147 51 234 / 0.2) !important;
+        }
+        
+        .list-view .client-card:hover {
+            background: rgb(55 65 81 / 0.2) !important;
+            border: 1px solid rgb(55 65 81 / 0.3) !important;
+        }
+        
+        .list-view input:checked ~ .client-card:hover {
+            background: rgb(147 51 234 / 0.15) !important;
+        }
+        
+        /* Client info in list - two line layout */
+        .list-view .client-info {
+            flex: 1;
+            display: block;
+        }
+        
+        .list-view .client-info > div {
+            display: block;
+        }
+        
+        .list-view .client-info h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0;
+            color: white;
+            line-height: 1.5;
+        }
+        
+        /* Second line with notes only */
+        .list-view .client-info p:first-of-type {
+            font-size: 0.875rem;
+            color: rgb(156 163 175);
+            margin: 0.25rem 0 0 0;
+            line-height: 1.4;
+        }
+        
+        /* Hide timezone in list view */
+        .list-view .client-info .text-xs {
+            display: none;
+        }
+        
+        /* Status and actions in list */
+        .list-view .client-card > div > div:last-child {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-left: auto;
+        }
+        
+        .list-view .client-card .bg-purple-900 {
+            margin: 0;
+        }
+        
+        .list-view .client-card button {
+            margin: 0;
+        }
+        
+        /* Add client in list view */
+        .list-view .add-client-card {
+            background: none !important;
+            border: 2px dashed rgb(55 65 81) !important;
+            border-radius: 0.5rem !important;
+            padding: 1rem !important;
+            margin-top: 1rem !important;
+        }
+        
+        .list-view .add-client-card:hover {
+            border-color: rgb(147 51 234) !important;
+            background: rgb(147 51 234 / 0.1) !important;
+        }
+        
+        .list-view .add-client-content {
+            justify-content: center;
+        }
+        
+        /* Hide view toggle on mobile since it's already single column */
+        @media (max-width: 768px) {
+            #gridViewBtn, #listViewBtn {
+                display: none;
+            }
+            .view-toggle-container {
+                display: none;
+            }
+        }
+        
+        /* Transition animations */
+        .client-grid {
+            transition: all 0.3s ease;
+        }
+        .client-card {
+            transition: all 0.3s ease;
+        }
+        
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .list-view .client-card {
+                padding: 0.75rem;
+            }
+        }
     </style>
 </head>
 <body class="h-full bg-black text-white">
@@ -126,6 +277,26 @@ $csrfToken = $auth->generateCSRFToken();
                     <span class="text-purple-500">*</span> ghst_
                 </h1>
                 <p class="text-gray-400">Select a client to manage</p>
+            </div>
+            
+            <!-- View Toggle - Desktop Only -->
+            <div class="view-toggle-container flex justify-center mb-6">
+                <div class="bg-gray-900 rounded-lg p-1 inline-flex">
+                    <button 
+                        id="gridViewBtn"
+                        onclick="switchView('grid')"
+                        class="px-4 py-2 rounded text-sm font-medium view-toggle-btn active touch-feedback"
+                    >
+                        Grid View
+                    </button>
+                    <button 
+                        id="listViewBtn"
+                        onclick="switchView('list')"
+                        class="px-4 py-2 rounded text-sm font-medium view-toggle-btn touch-feedback"
+                    >
+                        List View
+                    </button>
+                </div>
             </div>
             
             <?php if (isset($error)): ?>
@@ -144,9 +315,9 @@ $csrfToken = $auth->generateCSRFToken();
                 <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
                 <input type="hidden" name="action" value="switch" id="formAction">
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div id="clientsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 client-grid">
                     <?php foreach ($clients as $client): ?>
-                    <label class="relative cursor-pointer">
+                    <label class="relative cursor-pointer block">
                         <input 
                             type="radio" 
                             name="client_id" 
@@ -154,14 +325,15 @@ $csrfToken = $auth->generateCSRFToken();
                             class="sr-only peer"
                             <?= $currentClient && $currentClient['id'] == $client['id'] ? 'checked' : '' ?>
                         >
-                        <div class="bg-gray-900 border-2 border-gray-800 rounded-lg p-6 transition-all peer-checked:border-purple-500 peer-checked:bg-purple-900/20 hover:border-gray-700">
+                        <div class="bg-gray-900 border-2 border-gray-800 rounded-lg p-6 transition-all peer-checked:border-purple-500 peer-checked:bg-purple-900/20 hover:border-gray-700 client-card">
                             <div class="flex items-start justify-between">
-                                <div class="flex-1">
-                                    <h3 class="text-lg font-semibold"><?= sanitize($client['name']) ?></h3>
-                                    <?php if ($client['notes']): ?>
-                                        <p class="text-sm text-gray-400 mt-1"><?= sanitize($client['notes']) ?></p>
-                                    <?php endif; ?>
-                                    <p class="text-xs text-gray-500 mt-2">Timezone: <?= sanitize($client['timezone']) ?></p>
+                                <div class="flex-1 client-info">
+                                    <div>
+                                        <h3 class="text-lg font-semibold"><?= sanitize($client['name']) ?></h3>
+                                        <?php if ($client['notes']): ?>
+                                            <p class="text-sm text-gray-400 mt-1"><?= sanitize($client['notes']) ?></p>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
                                 <div class="flex items-start space-x-2 ml-4">
                                     <?php if ($currentClient && $currentClient['id'] == $client['id']): ?>
@@ -172,7 +344,7 @@ $csrfToken = $auth->generateCSRFToken();
                                         <button 
                                             type="button"
                                             onclick="confirmDelete(<?= $client['id'] ?>, '<?= addslashes($client['name']) ?>')"
-                                            class="p-1 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded transition-colors"
+                                            class="p-1 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded transition-colors touch-feedback"
                                             title="Delete client"
                                         >
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -189,14 +361,16 @@ $csrfToken = $auth->generateCSRFToken();
                     <!-- Add New Client Option -->
                     <div 
                         onclick="showAddClientForm()"
-                        class="bg-gray-900 border-2 border-dashed border-gray-800 rounded-lg p-6 flex items-center justify-center cursor-pointer hover:border-purple-500 transition-colors"
+                        class="bg-gray-900 border-2 border-dashed border-gray-800 rounded-lg p-6 flex items-center justify-center cursor-pointer hover:border-purple-500 transition-colors add-client-card touch-feedback"
                     >
-                        <div class="text-center">
-                            <svg class="mx-auto h-12 w-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="text-center add-client-content">
+                            <svg class="mx-auto h-12 w-12 text-gray-600 add-client-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                             </svg>
-                            <p class="mt-2 text-sm text-gray-500">Add New Client</p>
-                            <p class="text-xs text-gray-600 mt-1">Click to create</p>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500">Add New Client</p>
+                                <p class="text-xs text-gray-600 mt-1">Click to create</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -328,6 +502,50 @@ $csrfToken = $auth->generateCSRFToken();
             
             <script>
                 let deleteClientData = {};
+                let currentView = 'grid';
+                
+                // Initialize view from localStorage
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Only initialize view toggle on desktop
+                    if (window.innerWidth > 768) {
+                        const savedView = localStorage.getItem('clientView') || 'grid';
+                        switchView(savedView);
+                    }
+                    
+                    // Add haptic feedback
+                    if ('vibrate' in navigator) {
+                        document.addEventListener('touchstart', function(e) {
+                            if (e.target.closest('.touch-feedback')) {
+                                navigator.vibrate(10);
+                            }
+                        });
+                    }
+                });
+                
+                function switchView(view) {
+                    currentView = view;
+                    const container = document.getElementById('clientsContainer');
+                    const gridBtn = document.getElementById('gridViewBtn');
+                    const listBtn = document.getElementById('listViewBtn');
+                    
+                    if (view === 'list') {
+                        document.body.classList.add('list-view');
+                        gridBtn.classList.remove('active');
+                        listBtn.classList.add('active');
+                    } else {
+                        document.body.classList.remove('list-view');
+                        gridBtn.classList.add('active');
+                        listBtn.classList.remove('active');
+                    }
+                    
+                    // Save preference
+                    localStorage.setItem('clientView', view);
+                    
+                    // Trigger haptic feedback
+                    if ('vibrate' in navigator) {
+                        navigator.vibrate(10);
+                    }
+                }
                 
                 function showAddClientForm() {
                     document.getElementById('addClientModal').classList.remove('hidden');
