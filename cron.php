@@ -1,7 +1,7 @@
 <?php
 /**
  * Cron job for publishing scheduled posts
- * Run every 5 minutes: */5 * * * * /usr/bin/php /home/username/public_html/cron.php
+ * Run every 5 minutes: */5 * * * * /usr/bin/php /path/to/your/ghst/cron.php
  */
 
 // Prevent web access
@@ -9,9 +9,9 @@ if (php_sapi_name() !== 'cli' && (!isset($_GET['secret']) || $_GET['secret'] !==
     die('Unauthorized access');
 }
 
-require_once '../config.php';
-require_once '../includes/Database.php';
-require_once '../includes/functions.php';
+require_once 'config.php';
+require_once 'includes/Database.php';
+require_once 'includes/functions.php';
 
 // Set time limit for long-running processes
 set_time_limit(300); // 5 minutes

@@ -27,8 +27,7 @@ define('ENCRYPTION_KEY', 'your-32-character-encryption-key'); // 32 chars
 
 // Paths
 define('ROOT_PATH', dirname(__FILE__));
-define('PUBLIC_PATH', ROOT_PATH . '/public_html');
-define('UPLOADS_PATH', PUBLIC_PATH . '/uploads');
+define('UPLOADS_PATH', ROOT_PATH . '/uploads');
 define('INCLUDES_PATH', ROOT_PATH . '/includes');
 
 // Upload Settings

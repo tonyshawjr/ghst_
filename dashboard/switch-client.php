@@ -1,9 +1,9 @@
 <?php
-require_once '../../config.php';
-require_once '../../includes/Database.php';
-require_once '../../includes/Auth.php';
-require_once '../../includes/functions.php';
-require_once '../../includes/layout.php';
+require_once '../config.php';
+require_once '../includes/Database.php';
+require_once '../includes/Auth.php';
+require_once '../includes/functions.php';
+require_once '../includes/layout.php';
 
 $auth = new Auth();
 $auth->requireLogin();

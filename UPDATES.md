@@ -313,4 +313,61 @@ None yet - project just initialized
 
 ---
 
-Last Updated: 2025-08-04 10:10 AM
+### Session 3: Project Restructuring for Subdomain/TLD Deployment (2025-08-04)
+
+- **1:45 PM**: Restructured Project for Direct Domain Deployment
+  - Moved all files from `/public_html/` to root directory
+  - Updated all PHP include paths from `../../` to `../`
+  - Removed `PUBLIC_PATH` constant from config files
+  - Updated `UPLOADS_PATH` to point directly to `/uploads`
+  - Fixed all dashboard file paths
+  
+- **1:47 PM**: Updated Security Configuration
+  - Created new root `.htaccess` with proper security headers
+  - Added protection for sensitive files (config.php, etc.)
+  - Created `.htaccess` files for protected directories:
+    - `/includes/.htaccess` - Denies all access
+    - `/uploads/.htaccess` - Prevents PHP execution
+  - Maintained proper security while allowing web access
+  
+- **1:48 PM**: Documentation Updates
+  - Updated README.md to reflect new structure
+  - Removed references to public_html directory
+  - Updated installation instructions
+  - Fixed cron job path examples
+  - Updated permission instructions
+
+### Benefits of New Structure
+✅ Works directly on subdomains/TLDs without `/public_html/` in URLs
+✅ Cleaner URL structure (e.g., `app.domain.com/dashboard/` instead of `app.domain.com/public_html/dashboard/`)
+✅ Maintains security with proper .htaccess configurations
+✅ Still compatible with cPanel hosting
+✅ Easier deployment - just upload to domain root
+
+### File Structure Changes
+```
+Before:
+/ghst_
+  /public_html
+    /dashboard
+    /uploads
+    index.php
+    login.php
+    etc...
+  /includes
+  config.php
+
+After:
+/ghst_
+  /dashboard
+  /uploads
+  /includes
+  index.php
+  login.php
+  config.php
+  etc...
+```
+
+---
+
+Last Updated: 2025-08-04 1:48 PM
