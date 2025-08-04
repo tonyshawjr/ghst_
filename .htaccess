@@ -1,0 +1,3 @@
+# Protect ghst_ root directory
+Order deny,allow
+Deny from all

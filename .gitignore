@@ -1,0 +1,86 @@
+# Configuration files with sensitive data
+config.php
+
+# Development and system files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Logs and temporary files
+*.log
+error_log
+access_log
+*.tmp
+*.temp
+*.cache
+
+# Upload directories (user-generated content)
+uploads/*
+!uploads/.gitkeep
+!uploads/index.html
+
+# Media files
+public_html/uploads/*
+!public_html/uploads/.gitkeep
+!public_html/uploads/index.html
+
+# Database files
+*.sql
+*.sqlite
+*.db
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# PHP specific
+vendor/
+composer.phar
+phpunit.xml
+.phpunit.result.cache
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE files
+nbproject/
+.buildpath
+.project
+.settings/
+
+# OS generated files
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# Security files that might contain sensitive data
+.htpasswd
+
+# Session files
+sessions/*
+!sessions/.gitkeep
+
+# Cache directories
+cache/*
+!cache/.gitkeep
+
+# Node modules (if any frontend build tools are added later)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Compiled files
+*.min.js
+*.min.css
+dist/
+build/
