@@ -870,4 +870,57 @@ ini_set('session.cookie_samesite', 'Lax'); // Allow for cross-site navigation
 
 ---
 
-Last Updated: 2025-08-05 12:30 PM
+### Session 12: Media Upload Fix and Viewer Implementation (2025-08-05)
+
+- **11:45 PM**: Fixed Media Upload Issues
+  - Debugged upload failure - form was missing action parameter
+  - Changed action detection from $_GET to $_REQUEST to handle query params
+  - Created missing media directories with proper permissions
+  - Fixed database column mapping between old and new schema
+  - Added comprehensive error logging for debugging
+  - Upload now works successfully
+
+- **11:50 PM**: Implemented Media Viewer
+  - Created full-screen modal viewer for media files
+  - Supports both images and videos with appropriate display
+  - Added media information display below content (not overlaying)
+  - Close button in top-right with semi-transparent background
+  - Click outside or ESC key to close modal
+  - Shows filename, size, type, dimensions, and upload time
+
+- **11:55 PM**: Fixed Timezone Display Issue
+  - Identified UTC vs EDT timezone mismatch (4 hour difference)
+  - MySQL stores timestamps in UTC, system runs in EDT
+  - Updated JavaScript getRelativeTime() to handle UTC timestamps
+  - Time now displays correctly (e.g., "5 minutes ago" instead of "4 hours ago")
+
+- **12:00 AM**: Code Cleanup
+  - Removed all debug logging and error output
+  - Cleaned up verbose error messages in uploadFile()
+  - Deleted php-errors.log file
+  - Production-ready error handling
+
+### Media Features Now Working
+
+✅ **Upload Functionality**
+- Fixed action parameter handling
+- Proper directory creation
+- Database column compatibility
+- Clear error messages
+
+✅ **Media Viewer**
+- Full-screen modal display
+- Image and video support
+- Clean information layout (not overlaying media)
+- Keyboard and click controls
+- Proper timezone handling
+
+✅ **UI/UX Improvements**
+- Real thumbnail display from processed images
+- Smooth animations and transitions
+- Touch-friendly on mobile
+- Responsive design
+
+---
+
+Last Updated: 2025-08-05 12:05 AM
