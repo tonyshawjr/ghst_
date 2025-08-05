@@ -1081,4 +1081,194 @@ The ghst_ platform now has complete API integration with all major social media 
 
 ---
 
-Last Updated: 2025-08-05 4:50 PM
+### Session 14: AI Content Suggestions Implementation (2025-08-05)
+
+- **5:00 PM**: Implemented AI-Powered Content Suggestions
+  - Created comprehensive AIContentSuggestions class supporting Claude and OpenAI APIs
+  - Users can provide their own API keys for AI services at their own cost
+  - Built database schema for AI settings and usage tracking
+  - Created dedicated AI suggestions interface with real-time generation
+  
+- **5:05 PM**: AI Integration Features
+  - **API Support**:
+    - Claude (Anthropic): claude-3-opus, claude-3-sonnet, claude-3-haiku models
+    - OpenAI: GPT-4, GPT-4-turbo, GPT-3.5-turbo models
+  - **Platform-Specific Prompts**: Generates content optimized for each social platform
+  - **Customization Options**:
+    - Topic/keywords input
+    - Tone selection (professional, casual, friendly, humorous, inspirational, educational)
+    - Length control (short, medium, long)
+    - Optional hashtags and emojis
+  - **Security**: API keys are stored encrypted and never exposed
+  
+- **5:10 PM**: User Interface Implementation
+  - Created `/dashboard/ai-suggestions.php` for dedicated AI content generation
+  - Added "AI Suggestions" button to post creation form
+  - Settings modal for API key configuration
+  - Real-time suggestion generation with loading states
+  - Copy to clipboard and "Use in Scheduler" functionality
+  - Added AI Suggestions to main navigation menu
+  
+- **5:15 PM**: Database and Integration
+  - Created migration script (`db/migrate-ai.sql`) for existing installations
+  - Added AI configuration columns to clients table
+  - Created ai_usage_logs table for tracking API usage and costs
+  - Created ai_suggestions table for suggestion history
+  - Integrated AI suggestions with post creation workflow
+  - Window messaging for seamless content transfer
+
+### AI Content Suggestions Features
+
+✅ **Multi-Provider Support**
+
+- Claude API with latest models
+- OpenAI API with GPT models
+- Easy provider switching
+- Model selection per provider
+
+✅ **Content Generation**
+
+- Platform-specific optimization
+- Multiple tone options
+- Length control
+- Hashtag generation
+- Emoji inclusion options
+- 3 variations per request
+
+✅ **User Experience**
+
+- One-click API setup
+- Real-time generation
+- Copy functionality
+- Direct integration with post creation
+- Usage tracking and history
+
+✅ **Security & Cost Control**
+
+- Users provide their own API keys
+- No shared API costs
+- Encrypted key storage
+- Usage logging for transparency
+- API validation before saving
+
+### Technical Implementation
+
+#### New Files
+
+1. **includes/AIContentSuggestions.php** - Core AI integration class
+2. **dashboard/ai-suggestions.php** - AI suggestions interface
+3. **db/schema.sql** - Consolidated database schema with AI tables
+
+#### Integration Points
+
+- Post creation form enhanced with AI suggestions button
+- Navigation menu includes AI Suggestions item
+- Settings modal accessible from AI interface
+- Window messaging for content transfer
+- Session storage fallback for compatibility
+
+### Next Steps for AI Features
+
+1. **Enhanced Capabilities**:
+   - Image generation suggestions
+   - Content calendar recommendations
+   - Engagement prediction
+   - A/B testing suggestions
+
+2. **Additional Providers**:
+   - Google Gemini integration
+   - Cohere support
+   - Local LLM options
+
+3. **Advanced Features**:
+   - Brand voice training
+   - Competitor analysis
+   - Trending topic integration
+   - Multi-language support
+
+---
+
+## Session Summary
+
+The ghst_ platform now includes comprehensive AI-powered content suggestions integrated seamlessly into the post creation workflow. All database tables have been consolidated into a single schema.sql file for easier installation and maintenance.
+
+---
+
+---
+
+### Session 15: Multi-Provider AI Support (2025-08-05)
+
+- **6:00 PM**: Enhanced AI System for Multiple Provider Support
+  - Modified AIContentSuggestions class to support storing both Claude and OpenAI API keys simultaneously
+  - Users can now configure both providers and choose between them when generating content
+  - Updated database schema to have separate columns for each provider
+  - Created migration script for existing installations
+  
+- **6:05 PM**: Database Schema Updates
+  - Added new columns to clients table:
+    - `claude_api_key`: Stores Claude API key
+    - `claude_model`: Stores selected Claude model
+    - `openai_api_key`: Stores OpenAI API key  
+    - `openai_model`: Stores selected OpenAI model
+  - Created migration script (`db/migrate-multi-ai.sql`) for existing installations
+  - Updated settings page to show both provider configurations
+  
+- **6:10 PM**: Enhanced AI Suggestions Interface
+  - Added provider selection dropdown when multiple providers are configured
+  - Updated settings modal to show both Claude and OpenAI configuration sections
+  - Improved API key management - users can update keys independently
+  - Added visual indicators for configured providers
+  - Settings are saved per provider without affecting the other
+  
+- **6:15 PM**: User Experience Improvements
+  - **Provider Selection**: Dropdown appears only when both providers are configured
+  - **Smart Defaults**: Uses first configured provider if user doesn't select
+  - **Independent Configuration**: Each provider can be set up separately
+  - **Clear Visual Feedback**: Shows which providers are available
+  - **Seamless Switching**: Users can switch between providers on the fly
+
+### Multi-Provider AI Features
+
+✅ **Dual Provider Support**
+- Store both Claude and OpenAI API keys
+- Independent configuration for each provider
+- Model selection per provider
+- Provider selection during content generation
+
+✅ **Enhanced Settings UI**
+- Separate configuration sections for each provider
+- Clear visual separation between providers
+- Links to respective API key pages
+- Model selection dropdowns
+
+✅ **Smart Provider Management**
+- Automatic provider detection
+- Graceful fallback to available provider
+- Clear error messages per provider
+- Independent API key validation
+
+✅ **User Flexibility**
+- Choose provider per generation request
+- Compare outputs from different providers
+- Use best model for specific tasks
+- Cost optimization through provider choice
+
+### Technical Changes
+
+#### Modified Files:
+1. **includes/AIContentSuggestions.php** - Added multi-provider support
+2. **dashboard/ai-suggestions.php** - Added provider selection UI
+3. **dashboard/settings.php** - Enhanced AI settings section
+4. **db/migrate-multi-ai.sql** - Migration script for database updates
+
+### Benefits of Multi-Provider Support
+
+1. **Flexibility**: Users can choose the best AI for their specific needs
+2. **Redundancy**: If one provider has issues, users can switch to the other
+3. **Cost Control**: Users can use cheaper models for simple tasks
+4. **Quality Options**: Access to different AI strengths (Claude for creativity, GPT for analysis)
+5. **Future-Proof**: Easy to add more providers later
+
+---
+
+Last Updated: 2025-08-05 6:20 PM
