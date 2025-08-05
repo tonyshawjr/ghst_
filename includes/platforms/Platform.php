@@ -40,7 +40,7 @@ abstract class Platform {
     abstract public function getMediaLimits();
     
     // Common utility methods
-    protected function makeApiRequest($url, $method = 'GET', $data = null, $headers = [], $retryCount = 0) {
+    protected function makeApiRequest($url, $method = 'GET', $data = null, $headers = [], $retryCount = 0): array {
         $maxRetries = 3;
         $ch = curl_init();
         

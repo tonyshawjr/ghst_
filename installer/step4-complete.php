@@ -18,13 +18,15 @@
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <h3 class="text-lg font-semibold text-green-400 mb-3">✅ What's Installed</h3>
             <ul class="space-y-2 text-gray-300 text-sm">
-                <li>• Database created with OAuth-ready schema</li>
+                <li>• Database with complete analytics schema</li>
                 <li>• Admin account configured</li>
                 <li>• Configuration file generated</li>
-                <li>• OAuth 2.0 endpoints ready for all platforms</li>
-                <li>• Token refresh system configured</li>
+                <li>• OAuth 2.0 endpoints for all platforms</li>
+                <li>• Advanced analytics & reporting system</li>
+                <li>• Branding & white-label support</li>
+                <li>• Email delivery & PDF export</li>
+                <li>• Shareable report links</li>
                 <li>• Security settings applied</li>
-                <li>• Cron jobs ready for automation</li>
             </ul>
         </div>
         
@@ -33,11 +35,12 @@
             <ul class="space-y-2 text-gray-300 text-sm">
                 <li>• Log in with your admin account</li>
                 <li>• Create your first client</li>
-                <li>• Configure OAuth credentials for platforms</li>
-                <li>• Connect social media accounts with OAuth</li>
+                <li>• Configure branding settings</li>
+                <li>• Set up OAuth credentials</li>
+                <li>• Connect social media accounts</li>
+                <li>• Configure email delivery</li>
+                <li>• Set up cron jobs for analytics</li>
                 <li>• Start scheduling posts!</li>
-                <li>• Set up cron jobs (posting + token refresh)</li>
-                <li>• Configure email settings (optional)</li>
             </ul>
         </div>
     </div>
@@ -85,12 +88,22 @@
             <div class="text-left">
                 <h4 class="text-blue-300 font-medium">Cron Job Setup</h4>
                 <p class="text-blue-200 text-sm mt-1">
-                    To automate post publishing, add this cron job in cPanel:
+                    Add these cron jobs in cPanel for full automation:
                 </p>
-                <div class="mt-2 p-2 bg-gray-800 rounded text-xs font-mono text-gray-300">
-                    */5 * * * * /usr/bin/php <?= htmlspecialchars(dirname(__FILE__)) ?>/cron.php
+                <div class="mt-2 space-y-2">
+                    <div class="p-2 bg-gray-800 rounded">
+                        <p class="text-xs font-mono text-gray-300">*/5 * * * * /usr/bin/php <?= htmlspecialchars(dirname($_SERVER['SCRIPT_FILENAME'])) ?>/cron.php</p>
+                        <p class="text-blue-200 text-xs mt-1">Post publishing (every 5 minutes)</p>
+                    </div>
+                    <div class="p-2 bg-gray-800 rounded">
+                        <p class="text-xs font-mono text-gray-300">0 * * * * /usr/bin/php <?= htmlspecialchars(dirname($_SERVER['SCRIPT_FILENAME'])) ?>/cron/collect-analytics.php</p>
+                        <p class="text-blue-200 text-xs mt-1">Analytics collection (every hour)</p>
+                    </div>
+                    <div class="p-2 bg-gray-800 rounded">
+                        <p class="text-xs font-mono text-gray-300">*/5 * * * * /usr/bin/php <?= htmlspecialchars(dirname($_SERVER['SCRIPT_FILENAME'])) ?>/includes/workers/email-queue-worker.php</p>
+                        <p class="text-blue-200 text-xs mt-1">Email queue processing (every 5 minutes)</p>
+                    </div>
                 </div>
-                <p class="text-blue-200 text-xs mt-1">This runs every 5 minutes to publish scheduled posts</p>
             </div>
         </div>
     </div>

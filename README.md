@@ -1,7 +1,19 @@
-# ghst_ - Multi-Client Social Media Scheduling Tool
+# ghst_ - Self-Hosted Social Media Management Suite
 
 ## Overview
-ghst_ is a powerful, mobile-responsive multi-client social media scheduling platform designed for agencies and social media managers. Built with a hacker/crypto aesthetic, it provides a stylish dashboard for managing multiple clients' social media accounts, scheduled posts, and media uploads across desktop, tablet, and mobile devices.
+ghst_ is a powerful, self-hosted social media management platform designed for coaches, consultants, and boutique social media managers. This is a **one-time purchase (LTD)** solution that you install on your own server, giving you complete control and ownership of your social media management workflow. Built with a sleek hacker/crypto aesthetic, it provides everything you need to manage multiple clients professionally.
+
+### 🎯 Perfect For:
+- **Coaches** managing their own social presence
+- **Consultants** handling 5-20 client accounts  
+- **Boutique Social Media Managers** who want to own their tools
+- **Freelancers** tired of expensive monthly subscriptions
+
+### 💰 Pricing Model:
+- **One-time purchase** - No monthly fees, ever
+- **Self-hosted** - Install on your own server
+- **Bring Your Own APIs** - Use your own API keys for AI and social platforms
+- **Unlimited clients** - No artificial limits on growth
 
 ## Tech Stack
 - **Backend**: PHP 8+ (vanilla PHP for cPanel compatibility)
@@ -57,38 +69,110 @@ ghst_ is a powerful, mobile-responsive multi-client social media scheduling plat
 - Media metadata tracking
 - Storage usage statistics
 
-### 7. Analytics & Logs
-- Post success/failure tracking
-- Platform response logging
-- Interactive analytics dashboard with charts
-- Performance metrics and engagement tracking
-- Activity audit trail
+### 7. Advanced Analytics & Reporting
+- **Comprehensive Analytics Dashboard**
+  - Real-time engagement metrics and trends
+  - Platform comparison charts
+  - Best posting times heatmap
+  - Top performing content analysis
+  - Hashtag performance cloud
+  - Audience demographics breakdown
+  - Mobile-optimized with swipe navigation
+- **Professional Report Generation**
+  - Executive summary reports
+  - Detailed analytics reports
+  - Custom report templates
+  - Monthly/quarterly automated reports
+  - Period-over-period comparisons
+  - AI-powered insights and recommendations
+- **Branded PDF Export**
+  - Client logo and colors integration
+  - Professional layouts
+  - Chart and graph inclusion
+  - Background processing for large reports
+- **Email Delivery System**
+  - Automated report delivery
+  - Branded email templates
+  - Open/click tracking
+  - Multiple recipient support
+  - Queue management
+- **Shareable Report Links**
+  - Secure token-based sharing
+  - Expiration date control
+  - Password protection options
+  - QR code generation
+  - Access analytics
+  - IP restrictions
+- **ROI & Conversion Tracking**
+  - UTM campaign monitoring
+  - Revenue attribution
+  - Social commerce metrics
+  - Customer acquisition costs
+  - Conversion funnel analysis
 
-### 8. Settings & Configuration
-- **Tabbed Settings Interface** with Profile, System Info, and Reset & Reinstall tabs
+### 8. Client Branding & White-Label
+- **Comprehensive Branding Settings**
+  - Business name, tagline, and contact info
+  - Logo upload with drag-and-drop
+  - Custom brand colors (primary, secondary, accent)
+  - Email signature customization
+  - Report header/footer templates
+- **White-Label Capabilities**
+  - Branded client dashboards
+  - Custom report templates
+  - Personalized email communications
+  - Professional client presentation
+- **Branding Integration**
+  - Automatic application across all reports
+  - Branded PDF exports
+  - Email template customization
+  - Shareable link branding
+
+### 9. Settings & Configuration
+- **Tabbed Settings Interface** with Profile, Branding, Email, System Info, and Reset tabs
 - **Client Settings Management** - update client name, timezone, and notes
+- **Email Configuration** - SMTP/SendGrid settings with testing
 - **Password Management** - secure password changes with validation
 - **Complete Reset Functionality** - wipe all data and reinstall cleanly
 - **Foreign Key Safe Reset** - proper table deletion order without constraint errors
 - **System Information Display** - view app configuration and database details
 
-### 9. AI-Powered Content Suggestions
+### 10. AI-Powered Content Suggestions
 - **Multi-Provider Support** - Configure both Claude (Anthropic) and OpenAI simultaneously
 - **Provider Selection** - Choose between Claude or ChatGPT for each generation
-- **User-Provided API Keys** - Users supply their own keys at their own cost
+- **Bring Your Own API Keys** - Users supply their own keys (no monthly AI costs from us!)
 - **Platform-Specific Content** - Optimized suggestions for each social platform
 - **Customizable Generation** - Tone, length, hashtags, and emoji options
 - **Real-Time Generation** - Instant AI-powered content creation
-- **Usage Tracking** - Monitor API usage and costs
+- **Usage Tracking** - Monitor your API usage and costs
 - **Seamless Integration** - Direct content transfer to post scheduler
+
+## What You Get vs. Competitors
+
+### Traditional SaaS Tools (Buffer, Hootsuite, Later):
+- ❌ $15-99+/month forever
+- ❌ Your data on their servers
+- ❌ Limited by their API rate limits
+- ❌ Features locked behind tiers
+- ❌ AI costs built into pricing
+
+### ghst_ (One-Time Purchase):
+- ✅ Pay once, use forever
+- ✅ Your server, your data
+- ✅ Your own API limits (usually higher!)
+- ✅ All features included
+- ✅ Use your own AI API keys (pay-as-you-go)
 
 ## Installation
 
 ### Requirements
 - PHP 8.0 or higher
-- MySQL 5.7 or higher (port 8889 for MAMP)
-- cPanel hosting account (or any PHP hosting)
-- SSL certificate (for OAuth in production)
+- MySQL 5.7 or higher
+- Any web hosting with PHP support (cPanel, VPS, dedicated)
+- SSL certificate (required for social media OAuth)
+- Your own API keys for:
+  - Social platforms (Facebook, Instagram, Twitter, LinkedIn)
+  - AI providers (Claude and/or OpenAI) - optional but recommended
 
 ### Setup Steps
 
@@ -243,19 +327,45 @@ php -S 0.0.0.0:8000
 http://YOUR_COMPUTER_IP:8000
 ```
 
-## Future Roadmap
-- TikTok integration
-- YouTube Shorts support
-- Advanced analytics with export
-- White-label options
-- API for external integrations
-- Team collaboration features
-- A/B testing for posts
-- AI image generation
-- Brand voice training
-- Competitor analysis
-- Trending topic integration
-- Multi-language support
+## Why Self-Hosted?
+
+### Benefits for Coaches & Consultants
+
+1. **Data Privacy** - Your clients' data stays on YOUR server
+2. **No Limits** - Post as much as your API keys allow
+3. **Cost Control** - Pay only for what you use (API calls)
+4. **Customization** - Modify the code to fit your needs
+5. **Client Trust** - Show clients their data is secure
+
+### API Costs (Approximate)
+
+- **Social Media APIs**: Usually FREE for posting
+- **Claude API**: ~$0.003 per post suggestion
+- **OpenAI API**: ~$0.002 per post suggestion
+- **Monthly estimate**: $5-20 for active use (vs $99+/month for SaaS)
+
+## Perfect Use Cases
+
+### For Coaches
+
+- Manage your own social presence across platforms
+- Schedule content for your coaching programs
+- Track what content resonates with your audience
+- Generate AI content ideas that match your voice
+
+### For Social Media Managers
+
+- Handle multiple client accounts professionally
+- White-label reports with your branding
+- Give clients their own analytics dashboards
+- Scale without increasing monthly costs
+
+### For Consultants
+
+- Demonstrate social media ROI to clients
+- Schedule thought leadership content
+- Track engagement across industries
+- Maintain consistent posting schedule
 
 ## Support
 
@@ -263,7 +373,7 @@ For issues or questions, check the UPDATES.md file for recent changes and known 
 
 ## License
 
-Proprietary - All rights reserved
+One-time purchase license - Install on one domain for your business use.
 
 ---
 
