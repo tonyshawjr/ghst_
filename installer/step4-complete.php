@@ -18,12 +18,13 @@
         <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
             <h3 class="text-lg font-semibold text-green-400 mb-3">✅ What's Installed</h3>
             <ul class="space-y-2 text-gray-300 text-sm">
-                <li>• Database created with all tables</li>
+                <li>• Database created with OAuth-ready schema</li>
                 <li>• Admin account configured</li>
                 <li>• Configuration file generated</li>
-                <li>• OAuth endpoints ready</li>
+                <li>• OAuth 2.0 endpoints ready for all platforms</li>
+                <li>• Token refresh system configured</li>
                 <li>• Security settings applied</li>
-                <li>• Cron job configured for automation</li>
+                <li>• Cron jobs ready for automation</li>
             </ul>
         </div>
         
@@ -32,9 +33,10 @@
             <ul class="space-y-2 text-gray-300 text-sm">
                 <li>• Log in with your admin account</li>
                 <li>• Create your first client</li>
-                <li>• Connect social media accounts</li>
+                <li>• Configure OAuth credentials for platforms</li>
+                <li>• Connect social media accounts with OAuth</li>
                 <li>• Start scheduling posts!</li>
-                <li>• Set up cron job for automation</li>
+                <li>• Set up cron jobs (posting + token refresh)</li>
                 <li>• Configure email settings (optional)</li>
             </ul>
         </div>

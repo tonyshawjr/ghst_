@@ -4,7 +4,7 @@ require_once '../includes/Database.php';
 require_once '../includes/Auth.php';
 require_once '../includes/functions.php';
 require_once '../includes/layout.php';
-require_once '../includes/platforms/Platform.php';
+require_once '../includes/OAuth.php';
 
 $auth = new Auth();
 $auth->requireLogin();
@@ -13,6 +13,18 @@ requireClient();
 $db = Database::getInstance();
 $client = $auth->getCurrentClient();
 $action = $_GET['action'] ?? 'list';
+
+// Handle success/error messages from OAuth flow
+$message = '';
+$error = '';
+if (isset($_SESSION['success_message'])) {
+    $message = $_SESSION['success_message'];
+    unset($_SESSION['success_message']);
+}
+if (isset($_SESSION['error_message'])) {
+    $error = $_SESSION['error_message'];
+    unset($_SESSION['error_message']);
+}
 
 // Handle actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -89,6 +101,28 @@ renderHeader('Social Media Accounts');
 ?>
 
 <div class="space-y-8">
+    <!-- Success/Error Messages -->
+    <?php if ($message): ?>
+        <div class="bg-green-900/50 border border-green-700 rounded-lg p-4">
+            <div class="flex items-center space-x-2">
+                <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span class="text-green-200"><?= sanitize($message) ?></span>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($error): ?>
+        <div class="bg-red-900/50 border border-red-700 rounded-lg p-4">
+            <div class="flex items-center space-x-2">
+                <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01"></path>
+                </svg>
+                <span class="text-red-200"><?= sanitize($error) ?></span>
+            </div>
+        </div>
+    <?php endif; ?>
     <!-- Check if OAuth needs setup -->
     <?php 
     $unconfiguredPlatforms = array_filter($availablePlatforms, function($platform) {
@@ -183,17 +217,18 @@ renderHeader('Social Media Accounts');
                     <div class="divide-y divide-gray-800">
                         <?php foreach ($platformAccounts as $account): ?>
                             <?php
-                            // Get account info if available
-                            $accountInfo = null;
+                            // Check token expiry
                             $tokenWarning = null;
-                            try {
-                                $platformObj = Platform::create($platform);
-                                $platformObj->loadAccount($account['id']);
-                                $accountInfo = $platformObj->getAccountInfo();
-                                $tokenWarning = $platformObj->getTokenExpiryWarning();
-                            } catch (Exception $e) {
-                                $accountInfo = ['error' => $e->getMessage()];
+                            if ($account['token_expires_at'] && strtotime($account['token_expires_at']) <= (time() + 86400)) {
+                                if (strtotime($account['token_expires_at']) <= time()) {
+                                    $tokenWarning = 'Access token has expired. Reconnect to continue posting.';
+                                } else {
+                                    $tokenWarning = 'Access token expires soon. Consider reconnecting.';
+                                }
                             }
+                            
+                            // Parse account data if available
+                            $accountData = json_decode($account['account_data'] ?? '{}', true);
                             ?>
                             <div class="p-6">
                                 <div class="flex items-center justify-between">
@@ -210,10 +245,8 @@ renderHeader('Social Media Accounts');
                                                 </h5>
                                                 <div class="flex items-center space-x-4 text-sm text-gray-400">
                                                     <span>Connected <?= getRelativeTime($account['created_at']) ?></span>
-                                                    <?php if ($accountInfo && !isset($accountInfo['error'])): ?>
-                                                        <?php if (isset($accountInfo['followers'])): ?>
-                                                            <span><?= number_format($accountInfo['followers']) ?> followers</span>
-                                                        <?php endif; ?>
+                                                    <?php if ($account['platform'] === 'twitter' && isset($accountData['public_metrics']['followers_count'])): ?>
+                                                        <span><?= number_format($accountData['public_metrics']['followers_count']) ?> followers</span>
                                                     <?php endif; ?>
                                                 </div>
                                             </div>
@@ -230,16 +263,6 @@ renderHeader('Social Media Accounts');
                                             </div>
                                         <?php endif; ?>
                                         
-                                        <?php if (isset($accountInfo['error'])): ?>
-                                            <div class="mt-3 p-3 bg-red-900/50 border border-red-700 rounded-lg">
-                                                <div class="flex items-center space-x-2">
-                                                    <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                    </svg>
-                                                    <span class="text-red-200 text-sm">Connection issue: <?= sanitize($accountInfo['error']) ?></span>
-                                                </div>
-                                            </div>
-                                        <?php endif; ?>
                                     </div>
                                     
                                     <div class="flex items-center space-x-2">
@@ -320,36 +343,17 @@ function hideConnectModal() {
 }
 
 function connectPlatform(platform) {
-    // Simple direct connection - just add the account
-    const button = event.target.closest('button');
-    const originalText = button.innerHTML;
+    // Check if OAuth is configured for this platform
+    const configured = <?= json_encode(array_map(function($p) { return $p['configured']; }, $availablePlatforms)) ?>;
     
-    // Show loading
-    button.innerHTML = '<svg class="animate-spin h-4 w-4 inline mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Connecting...';
-    button.disabled = true;
+    if (!configured[platform]) {
+        alert('OAuth not configured for ' + platform + '. Please setup OAuth credentials first.');
+        return;
+    }
     
-    // Make request to connect
-    fetch('/api/oauth/quick-connect.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'platform=' + platform + '&csrf_token=<?= $auth->generateCSRFToken() ?>'
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            hideConnectModal();
-            location.reload(); // Refresh to show new account
-        } else {
-            alert('Error: ' + (data.error || 'Failed to connect account'));
-            button.innerHTML = originalText;
-            button.disabled = false;
-        }
-    })
-    .catch(error => {
-        alert('Connection failed');
-        button.innerHTML = originalText;
-        button.disabled = false;
-    });
+    // Redirect to OAuth authorization URL
+    const oauthUrl = '/api/oauth/authorize.php?platform=' + platform + '&client_id=<?= $client['id'] ?>';
+    window.location.href = oauthUrl;
 }
 
 function removeAccount(accountId, accountName) {
