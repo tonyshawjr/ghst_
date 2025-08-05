@@ -122,16 +122,54 @@ class TwitterPlatform extends Platform {
             throw new Exception("No account loaded");
         }
         
-        // TODO: Implement actual Twitter posting
-        // This is a placeholder - real implementation would:
-        // 1. Upload media if any
-        // 2. Create tweet with content and media IDs
+        // Check if token needs refresh
+        if ($this->isTokenExpired()) {
+            $this->refreshToken();
+        }
         
-        return [
-            'success' => true,
-            'platform_post_id' => 'placeholder_' . uniqid(),
-            'message' => 'Twitter posting not yet implemented',
-        ];
+        try {
+            // Check rate limits
+            $this->checkRateLimit('post');
+            
+            $tweetData = ['text' => $content];
+            
+            // Upload media if provided
+            if (!empty($mediaFiles)) {
+                $mediaIds = $this->uploadMedia($mediaFiles);
+                $tweetData['media'] = ['media_ids' => $mediaIds];
+            }
+            
+            // Add reply settings if specified
+            if (isset($options['reply_settings'])) {
+                $tweetData['reply_settings'] = $options['reply_settings'];
+            }
+            
+            // Create tweet
+            $response = $this->makeApiRequest(
+                $this->apiUrl . '/tweets',
+                'POST',
+                json_encode($tweetData),
+                [
+                    'Authorization: Bearer ' . $this->account['access_token'],
+                    'Content-Type: application/json',
+                ]
+            );
+            
+            if (!isset($response['data']['id'])) {
+                throw new Exception("Failed to create tweet");
+            }
+            
+            // Record successful action for rate limiting
+            $this->recordApiAction('post');
+            
+            return [
+                'success' => true,
+                'platform_post_id' => $response['data']['id'],
+                'message' => 'Successfully posted to Twitter',
+            ];
+        } catch (Exception $e) {
+            throw new Exception("Twitter posting failed: " . $e->getMessage());
+        }
     }
     
     public function getAccountInfo() {
@@ -187,6 +225,165 @@ class TwitterPlatform extends Platform {
             'allowed_types' => ['jpg', 'jpeg', 'png', 'gif', 'mp4', 'mov'],
             'video_max_duration' => 140, // 2:20 minutes
         ];
+    }
+    
+    /**
+     * Upload media files to Twitter
+     */
+    private function uploadMedia($mediaFiles) {
+        $mediaIds = [];
+        
+        foreach ($mediaFiles as $mediaFile) {
+            $mediaId = $this->uploadSingleMedia($mediaFile);
+            if ($mediaId) {
+                $mediaIds[] = $mediaId;
+            }
+        }
+        
+        if (empty($mediaIds)) {
+            throw new Exception("Failed to upload any media files");
+        }
+        
+        return $mediaIds;
+    }
+    
+    /**
+     * Upload a single media file
+     */
+    private function uploadSingleMedia($mediaFile) {
+        $filePath = UPLOADS_PATH . '/' . $mediaFile['filename'];
+        
+        if (!file_exists($filePath)) {
+            throw new Exception("Media file not found: " . $mediaFile['filename']);
+        }
+        
+        $fileSize = filesize($filePath);
+        $mimeType = $mediaFile['type'];
+        $isVideo = $this->isVideoFile($mediaFile);
+        
+        // Initialize upload
+        $initParams = [
+            'command' => 'INIT',
+            'total_bytes' => $fileSize,
+            'media_type' => $mimeType,
+        ];
+        
+        if ($isVideo) {
+            $initParams['media_category'] = 'tweet_video';
+        }
+        
+        $initResponse = $this->makeApiRequest(
+            'https://upload.twitter.com/1.1/media/upload.json',
+            'POST',
+            http_build_query($initParams),
+            [
+                'Authorization: Bearer ' . $this->account['access_token'],
+                'Content-Type: application/x-www-form-urlencoded',
+            ]
+        );
+        
+        if (!isset($initResponse['media_id_string'])) {
+            throw new Exception("Failed to initialize media upload");
+        }
+        
+        $mediaId = $initResponse['media_id_string'];
+        
+        // Upload chunks
+        $chunkSize = 5 * 1024 * 1024; // 5MB chunks
+        $segmentIndex = 0;
+        $handle = fopen($filePath, 'rb');
+        
+        while (!feof($handle)) {
+            $chunk = fread($handle, $chunkSize);
+            
+            $appendParams = [
+                'command' => 'APPEND',
+                'media_id' => $mediaId,
+                'segment_index' => $segmentIndex,
+                'media' => base64_encode($chunk),
+            ];
+            
+            $this->makeApiRequest(
+                'https://upload.twitter.com/1.1/media/upload.json',
+                'POST',
+                http_build_query($appendParams),
+                [
+                    'Authorization: Bearer ' . $this->account['access_token'],
+                    'Content-Type: application/x-www-form-urlencoded',
+                ]
+            );
+            
+            $segmentIndex++;
+        }
+        
+        fclose($handle);
+        
+        // Finalize upload
+        $finalizeParams = [
+            'command' => 'FINALIZE',
+            'media_id' => $mediaId,
+        ];
+        
+        $finalizeResponse = $this->makeApiRequest(
+            'https://upload.twitter.com/1.1/media/upload.json',
+            'POST',
+            http_build_query($finalizeParams),
+            [
+                'Authorization: Bearer ' . $this->account['access_token'],
+                'Content-Type: application/x-www-form-urlencoded',
+            ]
+        );
+        
+        // Wait for processing if needed (videos)
+        if (isset($finalizeResponse['processing_info'])) {
+            $this->waitForMediaProcessing($mediaId);
+        }
+        
+        return $mediaId;
+    }
+    
+    /**
+     * Wait for media processing to complete
+     */
+    private function waitForMediaProcessing($mediaId, $maxAttempts = 30, $delay = 2) {
+        for ($i = 0; $i < $maxAttempts; $i++) {
+            $statusResponse = $this->makeApiRequest(
+                'https://upload.twitter.com/1.1/media/upload.json?' . http_build_query([
+                    'command' => 'STATUS',
+                    'media_id' => $mediaId,
+                ]),
+                'GET',
+                null,
+                ['Authorization: Bearer ' . $this->account['access_token']]
+            );
+            
+            if (!isset($statusResponse['processing_info'])) {
+                return true; // Processing complete
+            }
+            
+            $state = $statusResponse['processing_info']['state'];
+            
+            if ($state === 'succeeded') {
+                return true;
+            } elseif ($state === 'failed') {
+                throw new Exception("Media processing failed: " . 
+                    ($statusResponse['processing_info']['error']['message'] ?? 'Unknown error'));
+            }
+            
+            // Still processing, wait
+            sleep($delay);
+        }
+        
+        throw new Exception("Media processing timeout");
+    }
+    
+    /**
+     * Check if file is a video
+     */
+    private function isVideoFile($mediaFile) {
+        $videoExtensions = ['mp4', 'mov'];
+        $extension = strtolower(pathinfo($mediaFile['filename'], PATHINFO_EXTENSION));
+        return in_array($extension, $videoExtensions);
     }
 }
 

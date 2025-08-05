@@ -1,13 +1,18 @@
 <?php
+require_once __DIR__ . '/../RateLimiter.php';
+require_once __DIR__ . '/../exceptions/PlatformExceptions.php';
+
 /**
  * Base Platform Class
  */
 abstract class Platform {
     protected $db;
     protected $account;
+    protected $rateLimiter;
     
     public function __construct($accountId = null) {
         $this->db = Database::getInstance();
+        $this->rateLimiter = new RateLimiter();
         if ($accountId) {
             $this->loadAccount($accountId);
         }
@@ -35,7 +40,8 @@ abstract class Platform {
     abstract public function getMediaLimits();
     
     // Common utility methods
-    protected function makeApiRequest($url, $method = 'GET', $data = null, $headers = []) {
+    protected function makeApiRequest($url, $method = 'GET', $data = null, $headers = [], $retryCount = 0) {
+        $maxRetries = 3;
         $ch = curl_init();
         
         curl_setopt_array($ch, [
@@ -66,18 +72,124 @@ abstract class Platform {
         $error = curl_error($ch);
         curl_close($ch);
         
+        // Log API request
+        $this->logApiRequest($url, $method, $httpCode, $error ?: null);
+        
         if ($error) {
-            throw new Exception("cURL Error: $error");
+            // Network errors - retry with exponential backoff
+            if ($retryCount < $maxRetries) {
+                $waitTime = pow(2, $retryCount) * 1000000; // Exponential backoff in microseconds
+                usleep($waitTime);
+                return $this->makeApiRequest($url, $method, $data, $headers, $retryCount + 1);
+            }
+            throw new PlatformNetworkException("Network error after $maxRetries retries: $error", $httpCode);
         }
         
         $decodedResponse = json_decode($response, true);
         
+        // Handle different HTTP error codes
         if ($httpCode >= 400) {
-            $errorMsg = $decodedResponse['error']['message'] ?? $decodedResponse['error'] ?? "HTTP Error $httpCode";
-            throw new Exception("API Error: $errorMsg");
+            $errorMsg = $this->extractErrorMessage($decodedResponse, $httpCode);
+            
+            // Retry on rate limit or temporary errors
+            if (in_array($httpCode, [429, 502, 503, 504]) && $retryCount < $maxRetries) {
+                $waitTime = $this->getRetryDelay($httpCode, $decodedResponse, $retryCount);
+                usleep($waitTime * 1000000);
+                return $this->makeApiRequest($url, $method, $data, $headers, $retryCount + 1);
+            }
+            
+            // Throw specific exceptions based on error type
+            switch ($httpCode) {
+                case 400:
+                    throw new PlatformBadRequestException($errorMsg, $httpCode);
+                case 401:
+                    throw new PlatformAuthException($errorMsg, $httpCode);
+                case 403:
+                    throw new PlatformForbiddenException($errorMsg, $httpCode);
+                case 404:
+                    throw new PlatformNotFoundException($errorMsg, $httpCode);
+                case 429:
+                    throw new PlatformRateLimitException($errorMsg, $httpCode);
+                case 500:
+                case 502:
+                case 503:
+                case 504:
+                    throw new PlatformServerException($errorMsg, $httpCode);
+                default:
+                    throw new PlatformApiException($errorMsg, $httpCode);
+            }
         }
         
         return $decodedResponse;
+    }
+    
+    /**
+     * Extract error message from API response
+     */
+    private function extractErrorMessage($response, $httpCode) {
+        if (!is_array($response)) {
+            return "HTTP Error $httpCode";
+        }
+        
+        // Try common error message locations
+        return $response['error']['message'] 
+            ?? $response['error_description'] 
+            ?? $response['message'] 
+            ?? $response['error'] 
+            ?? "HTTP Error $httpCode";
+    }
+    
+    /**
+     * Calculate retry delay based on error type
+     */
+    private function getRetryDelay($httpCode, $response, $retryCount) {
+        // Check for Retry-After header
+        if (isset($response['retry_after'])) {
+            return (int) $response['retry_after'];
+        }
+        
+        // Rate limit: wait longer
+        if ($httpCode === 429) {
+            return min(60, pow(2, $retryCount + 2)); // Max 60 seconds
+        }
+        
+        // Server errors: exponential backoff
+        return pow(2, $retryCount);
+    }
+    
+    /**
+     * Log API requests for debugging
+     */
+    private function logApiRequest($url, $method, $httpCode, $error = null) {
+        if (!$this->account) {
+            return;
+        }
+        
+        $logData = [
+            'platform' => $this->getName(),
+            'client_id' => $this->account['client_id'],
+            'url' => $url,
+            'method' => $method,
+            'http_code' => $httpCode,
+            'error' => $error,
+            'timestamp' => date('Y-m-d H:i:s'),
+        ];
+        
+        // Log to database
+        try {
+            $stmt = $this->db->prepare(
+                "INSERT INTO logs (client_id, action, details, level, created_at) 
+                 VALUES (?, ?, ?, ?, NOW())"
+            );
+            $stmt->execute([
+                $this->account['client_id'],
+                'api_request',
+                json_encode($logData),
+                $httpCode >= 400 ? 'error' : 'info'
+            ]);
+        } catch (Exception $e) {
+            // Silently fail - don't break API requests due to logging errors
+        }
     }
     
     protected function updateAccountTokens($accessToken, $refreshToken = null, $expiresAt = null) {
@@ -133,6 +245,49 @@ abstract class Platform {
         }
         
         return null;
+    }
+    
+    /**
+     * Check rate limits before making API calls
+     */
+    protected function checkRateLimit($actionType = 'post') {
+        if (!$this->account) {
+            throw new Exception("No account loaded");
+        }
+        
+        $result = $this->rateLimiter->checkLimit(
+            $this->getName(),
+            $this->account['client_id'],
+            $actionType
+        );
+        
+        if (!$result['allowed']) {
+            $retryAfter = $result['retry_after'];
+            $resetTime = date('Y-m-d H:i:s', $result['reset_time']);
+            
+            throw new Exception(
+                "Rate limit exceeded for {$this->getName()}. " .
+                "Retry after {$retryAfter} seconds (resets at {$resetTime}). " .
+                implode(' ', $result['errors'])
+            );
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Record an API action for rate limiting
+     */
+    protected function recordApiAction($actionType = 'post') {
+        if (!$this->account) {
+            return;
+        }
+        
+        $this->rateLimiter->recordAction(
+            $this->getName(),
+            $this->account['client_id'],
+            $actionType
+        );
     }
     
     public static function create($platform) {
