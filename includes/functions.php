@@ -25,16 +25,34 @@ function jsonResponse($data, $status = 200) {
 
 function uploadFile($file, $allowedTypes, $maxSize, $uploadPath) {
     if ($file['error'] !== UPLOAD_ERR_OK) {
-        return ['success' => false, 'error' => 'Upload failed'];
+        $errorMessages = [
+            UPLOAD_ERR_INI_SIZE => 'File exceeds upload_max_filesize directive',
+            UPLOAD_ERR_FORM_SIZE => 'File exceeds MAX_FILE_SIZE directive',
+            UPLOAD_ERR_PARTIAL => 'File was only partially uploaded',
+            UPLOAD_ERR_NO_FILE => 'No file was uploaded',
+            UPLOAD_ERR_NO_TMP_DIR => 'Missing temporary folder',
+            UPLOAD_ERR_CANT_WRITE => 'Failed to write file to disk',
+            UPLOAD_ERR_EXTENSION => 'Upload stopped by extension'
+        ];
+        $error = $errorMessages[$file['error']] ?? 'Unknown upload error';
+        return ['success' => false, 'error' => $error];
+    }
+    
+    if (!is_dir($uploadPath)) {
+        return ['success' => false, 'error' => 'Upload directory does not exist'];
+    }
+    
+    if (!is_writable($uploadPath)) {
+        return ['success' => false, 'error' => 'Upload directory is not writable'];
     }
     
     $fileExt = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
     if (!in_array($fileExt, $allowedTypes)) {
-        return ['success' => false, 'error' => 'Invalid file type'];
+        return ['success' => false, 'error' => 'Invalid file type: ' . $fileExt];
     }
     
     if ($file['size'] > $maxSize) {
-        return ['success' => false, 'error' => 'File too large'];
+        return ['success' => false, 'error' => 'File too large (' . formatBytes($file['size']) . ' > ' . formatBytes($maxSize) . ')'];
     }
     
     $fileName = uniqid() . '_' . time() . '.' . $fileExt;
