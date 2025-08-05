@@ -4,6 +4,7 @@ require_once '../includes/Database.php';
 require_once '../includes/Auth.php';
 require_once '../includes/functions.php';
 require_once '../includes/layout.php';
+require_once '../includes/MediaProcessor.php';
 
 $auth = new Auth();
 $auth->requireLogin();
@@ -15,6 +16,10 @@ $action = $_GET['action'] ?? 'list';
 
 // Handle file uploads and actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Enable error reporting for debugging
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+    
     if (!$auth->validateCSRFToken($_POST['csrf_token'] ?? '')) {
         jsonResponse(['success' => false, 'error' => 'Invalid CSRF token'], 400);
     }
@@ -37,28 +42,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $fileSize = filesize($filePath);
             $mimeType = mime_content_type($filePath);
             
-            // Generate thumbnail placeholder (actual implementation would create real thumbnails)
-            $thumbnailPath = null;
+            // Process media file
+            try {
+                $processor = new MediaProcessor();
+                $processResult = $processor->processUploadedMedia($filePath, $client['id']);
+                
+                if ($processResult['success']) {
+                    $thumbnailPath = $processResult['thumbnail'] ?? null;
+                    $optimizedPath = $processResult['optimized'] ?? $filePath;
+                    $platformVersions = $processResult['platform_versions'] ?? [];
+                } else {
+                    // If processing fails, continue with original file
+                    $thumbnailPath = null;
+                    $optimizedPath = $filePath;
+                    $platformVersions = [];
+                    error_log('Media processing failed: ' . ($processResult['error'] ?? 'Unknown error'));
+                }
+            } catch (Exception $e) {
+                // If processing throws exception, continue with original file
+                $thumbnailPath = null;
+                $optimizedPath = $filePath;
+                $platformVersions = [];
+                error_log('Media processing exception: ' . $e->getMessage());
+            }
             
             // Save to database
+            // Determine file type based on mime type
+            $fileType = 'document';
+            if (strpos($mimeType, 'image/') === 0) {
+                $fileType = 'image';
+            } elseif (strpos($mimeType, 'video/') === 0) {
+                $fileType = 'video';
+            }
+            
             $stmt = $db->prepare("
-                INSERT INTO media (client_id, filename, original_filename, file_path, thumbnail_path, file_size, mime_type, uploaded_by)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO media (client_id, filename, original_filename, file_path, thumbnail_path, file_size, mime_type, type, uploaded_by, optimized_path, platform_versions, file_url, file_name)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ");
             
-            $stmt->execute([
-                $client['id'],
-                $fileName,
-                $_FILES['media']['name'],
-                $filePath,
-                $thumbnailPath,
-                $fileSize,
-                $mimeType,
-                $auth->getCurrentUser()['id']
-            ]);
+            $relativeUrl = str_replace(ROOT_PATH, '', $filePath);
+            
+            try {
+                $stmt->execute([
+                    $client['id'],
+                    $fileName,
+                    $_FILES['media']['name'],
+                    $filePath,
+                    $thumbnailPath,
+                    $fileSize,
+                    $mimeType,
+                    $fileType,
+                    $auth->getCurrentUser()['id'],
+                    $optimizedPath ?? $filePath,
+                    json_encode($platformVersions ?? []),
+                    $relativeUrl,
+                    $_FILES['media']['name']
+                ]);
+            } catch (PDOException $e) {
+                error_log('Database error on media insert: ' . $e->getMessage());
+                jsonResponse(['success' => false, 'error' => 'Database error: ' . $e->getMessage()], 500);
+            }
             
             jsonResponse(['success' => true, 'message' => 'File uploaded successfully']);
         } else {
+            error_log('Upload failed: ' . json_encode($uploadResult));
             jsonResponse(['success' => false, 'error' => $uploadResult['error']], 400);
         }
     }
@@ -70,12 +117,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $media = $stmt->fetch();
         
         if ($media) {
-            // Delete file from filesystem
-            if (file_exists($media['file_path'])) {
-                unlink($media['file_path']);
+            // Delete file from filesystem - try both possible path columns
+            $filePath = $media['file_path'] ?? $media['file_url'];
+            if ($filePath && file_exists($filePath)) {
+                unlink($filePath);
             }
-            if ($media['thumbnail_path'] && file_exists($media['thumbnail_path'])) {
-                unlink($media['thumbnail_path']);
+            
+            $thumbnailPath = $media['thumbnail_path'] ?? $media['thumbnail_url'];
+            if ($thumbnailPath && file_exists($thumbnailPath)) {
+                unlink($thumbnailPath);
             }
             
             // Delete from database
@@ -111,7 +161,8 @@ if ($mediaType !== 'all') {
 }
 
 $stmt = $db->prepare("
-    SELECT m.*, u.name as uploaded_by_name
+    SELECT m.*, u.name as uploaded_by_name,
+           COALESCE(m.original_filename, m.file_name) as display_filename
     FROM media m
     LEFT JOIN users u ON m.uploaded_by = u.id
     $whereClause
@@ -225,19 +276,40 @@ renderHeader('Media Library');
                 <div class="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden group hover:border-purple-500 transition-colors">
                     <div class="aspect-square bg-gray-800 flex items-center justify-center relative">
                         <?php if (strpos($media['mime_type'], 'image/') === 0): ?>
-                            <!-- Image Preview Placeholder -->
-                            <div class="w-full h-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
-                                <svg class="w-8 h-8 text-white opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
-                            </div>
+                            <?php if ($media['thumbnail_path'] && file_exists($media['thumbnail_path'])): ?>
+                                <!-- Actual Thumbnail -->
+                                <img src="<?= str_replace(ROOT_PATH, '', $media['thumbnail_path'] ?? '') ?>" 
+                                     alt="<?= sanitize($media['display_filename']) ?>"
+                                     class="w-full h-full object-cover">
+                            <?php else: ?>
+                                <!-- Image Preview Placeholder -->
+                                <div class="w-full h-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-white opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                            <?php endif; ?>
                         <?php else: ?>
-                            <!-- Video Preview Placeholder -->
-                            <div class="w-full h-full bg-gradient-to-br from-red-600 to-orange-600 flex items-center justify-center">
-                                <svg class="w-8 h-8 text-white opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                                </svg>
-                            </div>
+                            <?php if ($media['thumbnail_path'] && file_exists($media['thumbnail_path'])): ?>
+                                <!-- Video Thumbnail -->
+                                <img src="<?= str_replace(ROOT_PATH, '', $media['thumbnail_path'] ?? '') ?>" 
+                                     alt="<?= sanitize($media['display_filename']) ?>"
+                                     class="w-full h-full object-cover">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div class="bg-black bg-opacity-50 rounded-full p-3">
+                                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M8 5v14l11-7z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <!-- Video Preview Placeholder -->
+                                <div class="w-full h-full bg-gradient-to-br from-red-600 to-orange-600 flex items-center justify-center">
+                                    <svg class="w-8 h-8 text-white opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                            <?php endif; ?>
                         <?php endif; ?>
                         
                         <!-- Overlay Actions -->
@@ -254,7 +326,7 @@ renderHeader('Media Library');
                                     </svg>
                                 </button>
                                 <button 
-                                    onclick="deleteMedia(<?= $media['id'] ?>, '<?= sanitize($media['original_filename']) ?>')"
+                                    onclick="deleteMedia(<?= $media['id'] ?>, '<?= sanitize($media['display_filename']) ?>')"
                                     class="p-2 bg-red-600 hover:bg-red-700 rounded-full text-white transition-colors"
                                     title="Delete"
                                 >
@@ -267,8 +339,8 @@ renderHeader('Media Library');
                     </div>
                     
                     <div class="p-3">
-                        <h4 class="text-sm font-medium text-white truncate" title="<?= sanitize($media['original_filename']) ?>">
-                            <?= sanitize($media['original_filename']) ?>
+                        <h4 class="text-sm font-medium text-white truncate" title="<?= sanitize($media['display_filename']) ?>">
+                            <?= sanitize($media['display_filename']) ?>
                         </h4>
                         <div class="flex items-center justify-between mt-2 text-xs text-gray-400">
                             <span><?= formatBytes($media['file_size']) ?></span>
