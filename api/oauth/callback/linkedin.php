@@ -1,114 +1,52 @@
 <?php
+/**
+ * LinkedIn OAuth Callback Handler
+ */
+
 require_once '../../../config.php';
 require_once '../../../includes/Database.php';
 require_once '../../../includes/Auth.php';
+require_once '../../../includes/OAuth.php';
 require_once '../../../includes/functions.php';
-require_once '../../../includes/platforms/LinkedinPlatform.php';
 
 session_start();
 
-$auth = new Auth();
-$auth->requireLogin();
-requireClient();
-
-$code = $_GET['code'] ?? '';
-$state = $_GET['state'] ?? '';
-$error = $_GET['error'] ?? '';
-
-// Check for errors from LinkedIn
-if ($error) {
-    $_SESSION['error'] = 'LinkedIn OAuth error: ' . ($_GET['error_description'] ?? $error);
-    header('Location: ' . APP_URL . '/dashboard/accounts.php');
-    exit;
-}
-
-// Verify state token
-if (!isset($_SESSION['oauth_state']) || $state !== $_SESSION['oauth_state']) {
-    $_SESSION['error'] = 'Invalid state token';
-    header('Location: ' . APP_URL . '/dashboard/accounts.php');
-    exit;
-}
-
-// Clear state token
-unset($_SESSION['oauth_state']);
-unset($_SESSION['oauth_platform']);
-
-if (!$code) {
-    $_SESSION['error'] = 'No authorization code received';
-    header('Location: ' . APP_URL . '/dashboard/accounts.php');
-    exit;
-}
-
 try {
-    $db = Database::getInstance();
-    $client = $auth->getCurrentClient();
+    $auth = new Auth();
+    $oauth = new OAuth();
     
-    // Create LinkedIn platform instance
-    $linkedin = new LinkedinPlatform();
-    
-    // Exchange code for access token
-    $redirectUri = APP_URL . '/api/oauth/callback/linkedin.php';
-    $tokenData = $linkedin->handleCallback($code, $state, $redirectUri);
-    
-    // Check if account already exists
-    $stmt = $db->prepare("
-        SELECT id FROM accounts 
-        WHERE client_id = ? AND platform = 'linkedin' AND platform_user_id = ?
-    ");
-    $stmt->execute([$client['id'], $tokenData['platform_user_id']]);
-    $existingAccount = $stmt->fetch();
-    
-    if ($existingAccount) {
-        // Update existing account
-        $stmt = $db->prepare("
-            UPDATE accounts SET 
-                access_token = ?,
-                refresh_token = ?,
-                token_expires_at = ?,
-                platform_username = ?,
-                is_active = 1,
-                updated_at = NOW()
-            WHERE id = ?
-        ");
-        $stmt->execute([
-            $tokenData['access_token'],
-            $tokenData['refresh_token'] ?? null,
-            $tokenData['expires_at'],
-            $tokenData['platform_username'],
-            $existingAccount['id']
-        ]);
-        
-        $_SESSION['success'] = 'LinkedIn account reconnected successfully!';
-    } else {
-        // Create new account
-        $stmt = $db->prepare("
-            INSERT INTO accounts (
-                client_id, platform, platform_user_id, platform_username,
-                access_token, refresh_token, token_expires_at, is_active,
-                created_at, updated_at
-            ) VALUES (?, 'linkedin', ?, ?, ?, ?, ?, 1, NOW(), NOW())
-        ");
-        $stmt->execute([
-            $client['id'],
-            $tokenData['platform_user_id'],
-            $tokenData['platform_username'],
-            $tokenData['access_token'],
-            $tokenData['refresh_token'] ?? null,
-            $tokenData['expires_at']
-        ]);
-        
-        $_SESSION['success'] = 'LinkedIn account connected successfully!';
+    // Check if user is logged in
+    if (!$auth->getCurrentUser()) {
+        throw new Exception('User not logged in');
     }
     
-    // Log the action
-    $auth->logAction('connect_account', [
-        'platform' => 'linkedin',
-        'username' => $tokenData['platform_username']
-    ]);
+    // Check for error from LinkedIn
+    if (isset($_GET['error'])) {
+        $error = $_GET['error_description'] ?? $_GET['error'];
+        throw new Exception('LinkedIn OAuth error: ' . $error);
+    }
+    
+    // Check for authorization code
+    $code = $_GET['code'] ?? '';
+    $state = $_GET['state'] ?? '';
+    
+    if (!$code || !$state) {
+        throw new Exception('Missing authorization code or state parameter');
+    }
+    
+    // Handle the OAuth callback
+    $accountId = $oauth->handleCallback('linkedin', $code, $state);
+    
+    // Success - redirect to accounts page with success message
+    $_SESSION['success_message'] = 'LinkedIn account connected successfully!';
+    header('Location: /dashboard/accounts.php');
+    exit;
     
 } catch (Exception $e) {
-    $_SESSION['error'] = 'Failed to connect LinkedIn account: ' . $e->getMessage();
+    error_log('LinkedIn OAuth error: ' . $e->getMessage());
+    
+    // Error - redirect to accounts page with error message
+    $_SESSION['error_message'] = 'Failed to connect LinkedIn account: ' . $e->getMessage();
+    header('Location: /dashboard/accounts.php');
+    exit;
 }
-
-header('Location: ' . APP_URL . '/dashboard/accounts.php');
-exit;
