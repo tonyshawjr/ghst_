@@ -12,13 +12,10 @@ requireClient();
 
 $db = Database::getInstance();
 $client = $auth->getCurrentClient();
-$action = $_GET['action'] ?? 'list';
+$action = $_REQUEST['action'] ?? $_GET['action'] ?? 'list';
 
 // Handle file uploads and actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Enable error reporting for debugging
-    error_reporting(E_ALL);
-    ini_set('display_errors', 1);
     
     if (!$auth->validateCSRFToken($_POST['csrf_token'] ?? '')) {
         jsonResponse(['success' => false, 'error' => 'Invalid CSRF token'], 400);
@@ -56,14 +53,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $thumbnailPath = null;
                     $optimizedPath = $filePath;
                     $platformVersions = [];
-                    error_log('Media processing failed: ' . ($processResult['error'] ?? 'Unknown error'));
                 }
             } catch (Exception $e) {
                 // If processing throws exception, continue with original file
                 $thumbnailPath = null;
                 $optimizedPath = $filePath;
                 $platformVersions = [];
-                error_log('Media processing exception: ' . $e->getMessage());
             }
             
             // Save to database
@@ -99,13 +94,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_FILES['media']['name']
                 ]);
             } catch (PDOException $e) {
-                error_log('Database error on media insert: ' . $e->getMessage());
                 jsonResponse(['success' => false, 'error' => 'Database error: ' . $e->getMessage()], 500);
             }
             
             jsonResponse(['success' => true, 'message' => 'File uploaded successfully']);
         } else {
-            error_log('Upload failed: ' . json_encode($uploadResult));
             jsonResponse(['success' => false, 'error' => $uploadResult['error']], 400);
         }
     }
@@ -273,7 +266,21 @@ renderHeader('Media Library');
     <?php else: ?>
         <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             <?php foreach ($mediaFiles as $media): ?>
-                <div class="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden group hover:border-purple-500 transition-colors">
+                <?php 
+                    // Prepare media data for JavaScript
+                    $mediaData = [
+                        'id' => $media['id'],
+                        'display_filename' => $media['display_filename'],
+                        'file_path' => $media['file_path'],
+                        'file_url' => $media['file_url'],
+                        'mime_type' => $media['mime_type'],
+                        'file_size' => $media['file_size'],
+                        'width' => $media['width'],
+                        'height' => $media['height'],
+                        'created_at' => $media['created_at']
+                    ];
+                ?>
+                <div class="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden group hover:border-purple-500 transition-colors" data-media-id="<?= $media['id'] ?>" data-media-info='<?= htmlspecialchars(json_encode($mediaData), ENT_QUOTES, 'UTF-8') ?>'>
                     <div class="aspect-square bg-gray-800 flex items-center justify-center relative">
                         <?php if (strpos($media['mime_type'], 'image/') === 0): ?>
                             <?php if ($media['thumbnail_path'] && file_exists($media['thumbnail_path'])): ?>
@@ -507,14 +514,13 @@ function uploadMedia(event) {
     
     const formData = new FormData();
     formData.append('media', selectedFile);
-    formData.append('action', 'upload');
     formData.append('csrf_token', '<?= $auth->generateCSRFToken() ?>');
     
     const uploadBtn = document.getElementById('uploadBtn');
     uploadBtn.disabled = true;
     uploadBtn.textContent = 'Uploading...';
     
-    fetch('', {
+    fetch('?action=upload', {
         method: 'POST',
         body: formData
     })
@@ -543,11 +549,10 @@ function deleteMedia(mediaId, fileName) {
     }
     
     const formData = new FormData();
-    formData.append('action', 'delete');
     formData.append('media_id', mediaId);
     formData.append('csrf_token', '<?= $auth->generateCSRFToken() ?>');
     
-    fetch('', {
+    fetch('?action=delete', {
         method: 'POST',
         body: formData
     })
@@ -566,8 +571,71 @@ function deleteMedia(mediaId, fileName) {
 }
 
 function viewMedia(mediaId) {
-    // TODO: Implement media viewer modal
-    alert('Media viewer not yet implemented');
+    // Find the media data
+    const mediaElement = document.querySelector(`[data-media-id="${mediaId}"]`);
+    if (!mediaElement) return;
+    
+    const mediaData = JSON.parse(mediaElement.dataset.mediaInfo);
+    showMediaViewer(mediaData);
+}
+
+function showMediaViewer(media) {
+    const modal = document.createElement('div');
+    modal.id = 'mediaViewerModal';
+    modal.className = 'fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50';
+    
+    const isVideo = media.mime_type.startsWith('video/');
+    const mediaPath = media.file_path ? media.file_path.replace('<?= ROOT_PATH ?>', '') : media.file_url;
+    
+    let content = '';
+    if (isVideo) {
+        content = `
+            <video controls autoplay class="max-w-full max-h-full">
+                <source src="${mediaPath}" type="${media.mime_type}">
+                Your browser does not support the video tag.
+            </video>
+        `;
+    } else {
+        content = `
+            <img src="${mediaPath}" alt="${media.display_filename}" class="max-w-full max-h-full object-contain">
+        `;
+    }
+    
+    modal.innerHTML = `
+        <div class="flex flex-col items-center max-w-7xl mx-auto p-4">
+            <button onclick="closeMediaViewer()" class="absolute top-4 right-4 text-white hover:text-gray-300 p-2 bg-black bg-opacity-50 rounded-full">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+            <div class="mb-4">
+                ${content}
+            </div>
+            <div class="bg-gray-900 rounded-lg p-4 text-white max-w-2xl w-full">
+                <h3 class="text-lg font-semibold mb-2">${media.display_filename}</h3>
+                <div class="flex flex-wrap items-center gap-4 text-sm text-gray-400">
+                    <span>${formatBytes(media.file_size)}</span>
+                    <span>${media.mime_type}</span>
+                    ${media.width && media.height ? `<span>${media.width}x${media.height}</span>` : ''}
+                    <span>${getRelativeTime(media.created_at)}</span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    modal.onclick = function(e) {
+        if (e.target === modal) {
+            closeMediaViewer();
+        }
+    };
+}
+
+function closeMediaViewer() {
+    const modal = document.getElementById('mediaViewerModal');
+    if (modal) {
+        modal.remove();
+    }
 }
 
 function filterMedia() {
@@ -596,17 +664,42 @@ function filterByType(type) {
 }
 
 function formatBytes(bytes) {
-    if (bytes === 0) return '0 Bytes';
+    if (!bytes || bytes === 0) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-// Close modal on escape key
+function getRelativeTime(dateString) {
+    // If dateString doesn't include timezone info and is in UTC, append 'Z'
+    if (!dateString.includes('Z') && !dateString.includes('+') && !dateString.includes('T')) {
+        dateString = dateString.replace(' ', 'T') + 'Z';
+    }
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffSecs = Math.floor(diffMs / 1000);
+    const diffMins = Math.floor(diffSecs / 60);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+    const diffMonths = Math.floor(diffDays / 30);
+    const diffYears = Math.floor(diffDays / 365);
+    
+    if (diffYears > 0) return diffYears + ' year' + (diffYears > 1 ? 's' : '') + ' ago';
+    if (diffMonths > 0) return diffMonths + ' month' + (diffMonths > 1 ? 's' : '') + ' ago';
+    if (diffDays > 0) return diffDays + ' day' + (diffDays > 1 ? 's' : '') + ' ago';
+    if (diffHours > 0) return diffHours + ' hour' + (diffHours > 1 ? 's' : '') + ' ago';
+    if (diffMins > 0) return diffMins + ' minute' + (diffMins > 1 ? 's' : '') + ' ago';
+    return 'just now';
+}
+
+// Close modals on escape key
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         hideUploadModal();
+        closeMediaViewer();
     }
 });
 </script>
