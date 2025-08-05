@@ -1,0 +1,287 @@
+/**
+ * Analytics Dashboard Styles
+ * Optimized for performance and smooth scrolling
+ */
+
+/* Smooth scrolling performance */
+.analytics-dashboard {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Optimize chart containers for better performance */
+.chart-container {
+    contain: layout style paint;
+    will-change: transform;
+}
+
+/* Loading states */
+.chart-loading {
+    background: linear-gradient(90deg, 
+        rgba(55, 65, 81, 0.3) 25%, 
+        rgba(75, 85, 99, 0.5) 50%, 
+        rgba(55, 65, 81, 0.3) 75%
+    );
+    background-size: 200% 100%;
+    animation: loading-shimmer 2s infinite;
+}
+
+@keyframes loading-shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Optimize metric cards */
+.metric-card {
+    contain: layout style;
+    transform: translateZ(0); /* Force hardware acceleration */
+}
+
+.metric-card:hover {
+    transform: translateY(-2px) translateZ(0);
+    transition: transform 0.2s ease-out;
+}
+
+/* Mobile chart transitions */
+.mobile-chart {
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+.mobile-chart:not([style*="display: block"]) {
+    pointer-events: none;
+}
+
+/* Chart tab animations */
+.chart-tab {
+    transition: all 0.2s ease-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.chart-tab::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.5s;
+}
+
+.chart-tab:hover::before {
+    left: 100%;
+}
+
+/* Touch feedback */
+.touch-feedback:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease-out;
+}
+
+/* Ripple effect */
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+.ripple-effect {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(139, 92, 246, 0.3);
+    transform: scale(0);
+    animation: ripple 0.6s linear;
+    pointer-events: none;
+}
+
+/* Error states */
+.chart-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    text-align: center;
+    color: #ef4444;
+}
+
+/* Performance optimizations */
+.chart-container canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Smooth metric animations */
+.metric-value {
+    transition: all 0.3s ease-out;
+}
+
+/* Responsive optimizations */
+@media (max-width: 768px) {
+    .chart-container {
+        margin-bottom: 1rem;
+    }
+    
+    .metric-card {
+        padding: 1rem;
+    }
+    
+    /* Optimize touch targets */
+    .chart-tab {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
+
+/* High DPI screens */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .chart-container canvas {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* Dark mode optimizations */
+@media (prefers-color-scheme: dark) {
+    .chart-loading {
+        background: linear-gradient(90deg, 
+            rgba(31, 41, 55, 0.3) 25%, 
+            rgba(55, 65, 81, 0.5) 50%, 
+            rgba(31, 41, 55, 0.3) 75%
+        );
+    }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .analytics-dashboard {
+        scroll-behavior: auto;
+    }
+    
+    .metric-card:hover,
+    .chart-tab,
+    .mobile-chart,
+    .metric-value {
+        transition: none;
+    }
+    
+    .chart-loading {
+        animation: none;
+        background: rgba(55, 65, 81, 0.3);
+    }
+}
+
+/* Print styles */
+@media print {
+    .chart-tab,
+    .mobile-chart:not([style*="display: block"]) {
+        display: none !important;
+    }
+    
+    .chart-container {
+        page-break-inside: avoid;
+    }
+}
+
+/* Empty state animations */
+.empty-state {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Staggered card animations */
+.metric-card:nth-child(1) { animation-delay: 0.1s; }
+.metric-card:nth-child(2) { animation-delay: 0.2s; }
+.metric-card:nth-child(3) { animation-delay: 0.3s; }
+.metric-card:nth-child(4) { animation-delay: 0.4s; }
+
+.metric-card {
+    animation: slideInUp 0.4s ease-out both;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Loading skeleton for metrics */
+.metric-skeleton {
+    background: linear-gradient(90deg, 
+        rgba(55, 65, 81, 0.2) 25%, 
+        rgba(75, 85, 99, 0.3) 50%, 
+        rgba(55, 65, 81, 0.2) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 0.375rem;
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Context menu */
+.context-menu {
+    animation: contextMenuSlideIn 0.2s ease-out;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+@keyframes contextMenuSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Pull to refresh indicator */
+.pull-refresh-indicator {
+    transform: translateY(-100%);
+    transition: transform 0.3s ease-out;
+}
+
+.pull-refresh-indicator.active {
+    transform: translateY(0);
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: no-preference) {
+    .focus-visible:focus {
+        outline: 2px solid #8b5cf6;
+        outline-offset: 2px;
+        transition: outline-offset 0.2s ease;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .metric-card {
+        border: 2px solid currentColor;
+    }
+    
+    .chart-tab.active {
+        outline: 3px solid currentColor;
+    }
+}

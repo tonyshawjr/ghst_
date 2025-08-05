@@ -1,4 +1,10 @@
 <?php
+// Check if config.php exists, if not redirect to installer
+if (!file_exists('config.php')) {
+    header('Location: installer.php');
+    exit;
+}
+
 require_once 'config.php';
 require_once 'includes/Database.php';
 require_once 'includes/Auth.php';

@@ -63,12 +63,35 @@ function handleDatabaseSetup() {
         
         // Import schema
         $schema = file_get_contents('db/schema.sql');
-        $statements = explode(';', $schema);
+        
+        // Remove comments and split by semicolons
+        $schema = preg_replace('/--.*?\n/', "\n", $schema);
+        $schema = preg_replace('/\/\*.*?\*\//s', '', $schema);
+        
+        // Split into individual statements
+        $statements = array_filter(array_map('trim', explode(';', $schema)));
+        
+        $totalStatements = count($statements);
+        $completed = 0;
         
         foreach ($statements as $statement) {
-            $statement = trim($statement);
-            if (!empty($statement)) {
+            if (empty($statement) || strpos($statement, '--') === 0) {
+                continue;
+            }
+            
+            // Skip delimiter changes
+            if (stripos($statement, 'DELIMITER') === 0) {
+                continue;
+            }
+            
+            try {
                 $pdo->exec($statement);
+                $completed++;
+            } catch (PDOException $e) {
+                // Ignore duplicate entry errors for default data
+                if (strpos($e->getMessage(), 'Duplicate entry') === false) {
+                    throw $e;
+                }
             }
         }
         
@@ -231,6 +254,7 @@ define('ENCRYPTION_KEY', '{$encryptionKey}');
 define('ROOT_PATH', dirname(__FILE__));
 define('UPLOADS_PATH', ROOT_PATH . '/uploads');
 define('INCLUDES_PATH', ROOT_PATH . '/includes');
+define('MEDIA_PATH', ROOT_PATH . '/uploads/media');
 
 // Upload Settings
 define('MAX_UPLOAD_SIZE', 50 * 1024 * 1024); // 50MB

@@ -218,7 +218,7 @@ class FacebookPlatform extends Platform {
     /**
      * Create a text-only post
      */
-    private function createTextPost($pageId, $content, $pageAccessToken) {
+    private function createTextPost($pageId, $content, $pageAccessToken): array {
         return $this->makeApiRequest(
             $this->apiUrl . '/' . $pageId . '/feed',
             'POST',
@@ -233,7 +233,7 @@ class FacebookPlatform extends Platform {
     /**
      * Create a single photo post
      */
-    private function createPhotoPost($pageId, $content, $mediaFile, $pageAccessToken) {
+    private function createPhotoPost($pageId, $content, $mediaFile, $pageAccessToken): array {
         $photoUrl = $this->getMediaUrl($mediaFile);
         
         return $this->makeApiRequest(
@@ -251,7 +251,7 @@ class FacebookPlatform extends Platform {
     /**
      * Create a video post
      */
-    private function createVideoPost($pageId, $content, $mediaFile, $pageAccessToken) {
+    private function createVideoPost($pageId, $content, $mediaFile, $pageAccessToken): array {
         $videoUrl = $this->getMediaUrl($mediaFile);
         
         // Start video upload
@@ -272,7 +272,7 @@ class FacebookPlatform extends Platform {
     /**
      * Create a multi-photo post
      */
-    private function createMultiPhotoPost($pageId, $content, $mediaFiles, $pageAccessToken) {
+    private function createMultiPhotoPost($pageId, $content, $mediaFiles, $pageAccessToken): array {
         $photoIds = [];
         
         // Upload each photo individually without publishing
@@ -339,5 +339,284 @@ class FacebookPlatform extends Platform {
         $videoExtensions = ['mp4', 'mov', 'avi'];
         $extension = strtolower(pathinfo($mediaFile['filename'], PATHINFO_EXTENSION));
         return in_array($extension, $videoExtensions);
+    }
+    
+    /**
+     * Get post analytics from Facebook API
+     */
+    public function getPostAnalytics($postId, $metrics = null) {
+        if (!$this->account) {
+            throw new Exception("No account loaded");
+        }
+        
+        // Default metrics to fetch
+        if ($metrics === null) {
+            $metrics = [
+                'post_impressions',
+                'post_impressions_unique',
+                'post_engaged_users',
+                'post_clicks',
+                'post_reactions_like_total',
+                'post_reactions_love_total',
+                'post_reactions_wow_total',
+                'post_reactions_haha_total',
+                'post_reactions_sorry_total',
+                'post_reactions_anger_total',
+                'post_video_views',
+                'post_video_complete_views_30s'
+            ];
+        }
+        
+        try {
+            // Get insights data
+            $insightsResponse = $this->makeApiRequest(
+                $this->apiUrl . '/' . $postId . '/insights?' . http_build_query([
+                    'metric' => implode(',', $metrics),
+                    'access_token' => $this->account['access_token']
+                ])
+            );
+            
+            // Get basic post data for additional metrics
+            $postResponse = $this->makeApiRequest(
+                $this->apiUrl . '/' . $postId . '?' . http_build_query([
+                    'fields' => 'comments.summary(true),shares',
+                    'access_token' => $this->account['access_token']
+                ])
+            );
+            
+            // Process metrics
+            $analytics = [
+                'impressions' => 0,
+                'reach' => 0,
+                'engagement_rate' => 0,
+                'clicks' => 0,
+                'shares' => 0,
+                'comments' => 0,
+                'likes' => 0,
+                'reactions' => [],
+                'video_views' => 0,
+                'video_completion_rate' => 0
+            ];
+            
+            // Process insights data
+            if (isset($insightsResponse['data'])) {
+                foreach ($insightsResponse['data'] as $metric) {
+                    $name = $metric['name'];
+                    $value = $metric['values'][0]['value'] ?? 0;
+                    
+                    switch ($name) {
+                        case 'post_impressions':
+                            $analytics['impressions'] = $value;
+                            break;
+                        case 'post_impressions_unique':
+                            $analytics['reach'] = $value;
+                            break;
+                        case 'post_engaged_users':
+                            if ($analytics['reach'] > 0) {
+                                $analytics['engagement_rate'] = round(($value / $analytics['reach']) * 100, 2);
+                            }
+                            break;
+                        case 'post_clicks':
+                            $analytics['clicks'] = $value;
+                            break;
+                        case 'post_video_views':
+                            $analytics['video_views'] = $value;
+                            break;
+                        case 'post_video_complete_views_30s':
+                            if ($analytics['video_views'] > 0) {
+                                $analytics['video_completion_rate'] = round(($value / $analytics['video_views']) * 100, 2);
+                            }
+                            break;
+                        default:
+                            if (strpos($name, 'post_reactions_') === 0) {
+                                $reactionType = str_replace(['post_reactions_', '_total'], '', $name);
+                                $analytics['reactions'][$reactionType] = $value;
+                                $analytics['likes'] += $value;
+                            }
+                    }
+                }
+            }
+            
+            // Add post data
+            if (isset($postResponse['comments']['summary']['total_count'])) {
+                $analytics['comments'] = $postResponse['comments']['summary']['total_count'];
+            }
+            
+            if (isset($postResponse['shares']['count'])) {
+                $analytics['shares'] = $postResponse['shares']['count'];
+            }
+            
+            return $analytics;
+            
+        } catch (Exception $e) {
+            throw new Exception("Failed to fetch Facebook post analytics: " . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Get page analytics (follower data, etc.)
+     */
+    public function getPageAnalytics($pageId = null, $metrics = null) {
+        if (!$this->account) {
+            throw new Exception("No account loaded");
+        }
+        
+        if ($pageId === null) {
+            $pageId = $this->getDefaultPageId();
+        }
+        
+        // Default metrics to fetch
+        if ($metrics === null) {
+            $metrics = [
+                'page_fans',
+                'page_fan_adds',
+                'page_fan_removes',
+                'page_impressions',
+                'page_impressions_unique',
+                'page_engaged_users'
+            ];
+        }
+        
+        try {
+            $pageAccessToken = $this->getPageAccessToken($pageId);
+            
+            // Get page insights
+            $response = $this->makeApiRequest(
+                $this->apiUrl . '/' . $pageId . '/insights?' . http_build_query([
+                    'metric' => implode(',', $metrics),
+                    'period' => 'day',
+                    'since' => date('Y-m-d', strtotime('-7 days')),
+                    'until' => date('Y-m-d'),
+                    'access_token' => $pageAccessToken
+                ])
+            );
+            
+            $analytics = [
+                'follower_count' => 0,
+                'following_count' => 0,
+                'daily_growth' => 0,
+                'new_followers' => 0,
+                'unfollows' => 0,
+                'impressions' => 0,
+                'reach' => 0,
+                'engaged_users' => 0
+            ];
+            
+            if (isset($response['data'])) {
+                foreach ($response['data'] as $metric) {
+                    $name = $metric['name'];
+                    $values = $metric['values'];
+                    $latestValue = end($values)['value'] ?? 0;
+                    
+                    switch ($name) {
+                        case 'page_fans':
+                            $analytics['follower_count'] = $latestValue;
+                            break;
+                        case 'page_fan_adds':
+                            $analytics['new_followers'] = array_sum(array_column($values, 'value'));
+                            break;
+                        case 'page_fan_removes':
+                            $analytics['unfollows'] = array_sum(array_column($values, 'value'));
+                            break;
+                        case 'page_impressions':
+                            $analytics['impressions'] = array_sum(array_column($values, 'value'));
+                            break;
+                        case 'page_impressions_unique':
+                            $analytics['reach'] = array_sum(array_column($values, 'value'));
+                            break;
+                        case 'page_engaged_users':
+                            $analytics['engaged_users'] = array_sum(array_column($values, 'value'));
+                            break;
+                    }
+                }
+            }
+            
+            $analytics['daily_growth'] = $analytics['new_followers'] - $analytics['unfollows'];
+            
+            return $analytics;
+            
+        } catch (Exception $e) {
+            throw new Exception("Failed to fetch Facebook page analytics: " . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Get available pages for this account
+     */
+    public function getPages() {
+        if (!$this->account) {
+            throw new Exception("No account loaded");
+        }
+        
+        try {
+            $response = $this->makeApiRequest(
+                $this->apiUrl . '/me/accounts?' . http_build_query([
+                    'access_token' => $this->account['access_token'],
+                    'fields' => 'id,name,category,fan_count,access_token',
+                ])
+            );
+            
+            return $response['data'] ?? [];
+            
+        } catch (Exception $e) {
+            throw new Exception("Failed to fetch Facebook pages: " . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Get historical analytics for a date range
+     */
+    public function getHistoricalAnalytics($pageId, $startDate, $endDate, $metrics = null) {
+        if (!$this->account) {
+            throw new Exception("No account loaded");
+        }
+        
+        if ($metrics === null) {
+            $metrics = [
+                'page_fans',
+                'page_impressions',
+                'page_impressions_unique',
+                'page_engaged_users',
+                'page_post_engagements'
+            ];
+        }
+        
+        try {
+            $pageAccessToken = $this->getPageAccessToken($pageId);
+            
+            $response = $this->makeApiRequest(
+                $this->apiUrl . '/' . $pageId . '/insights?' . http_build_query([
+                    'metric' => implode(',', $metrics),
+                    'period' => 'day',
+                    'since' => $startDate,
+                    'until' => $endDate,
+                    'access_token' => $pageAccessToken
+                ])
+            );
+            
+            $analytics = [];
+            
+            if (isset($response['data'])) {
+                foreach ($response['data'] as $metric) {
+                    $name = $metric['name'];
+                    $values = $metric['values'];
+                    
+                    foreach ($values as $value) {
+                        $date = substr($value['end_time'], 0, 10); // Extract date from timestamp
+                        
+                        if (!isset($analytics[$date])) {
+                            $analytics[$date] = [];
+                        }
+                        
+                        $analytics[$date][$name] = $value['value'];
+                    }
+                }
+            }
+            
+            return $analytics;
+            
+        } catch (Exception $e) {
+            throw new Exception("Failed to fetch Facebook historical analytics: " . $e->getMessage());
+        }
     }
 }

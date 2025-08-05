@@ -8,6 +8,7 @@
 
 require_once '../../config.php';
 require_once '../../includes/Database.php';
+require_once '../../includes/AnalyticsCollector.php';
 
 // Verify webhook (for initial setup)
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -216,7 +217,10 @@ function handleInstagramMention($account, $data) {
 function handleInstagramStoryInsights($account, $data) {
     global $db;
     
-    // Update analytics data
+    // Store real-time analytics data
+    storeRealTimeAnalytics($account, 'instagram', $data);
+    
+    // Update analytics data (legacy format)
     $metrics = $data['metrics'] ?? [];
     
     foreach ($metrics as $metric) {
@@ -316,6 +320,7 @@ function updatePostMetrics($platform, $postId, $data) {
         'views' => $data['views'] ?? null,
     ];
     
+    // Update legacy post_metrics table
     foreach ($metrics as $name => $value) {
         if ($value !== null) {
             $stmt = $db->prepare(
@@ -328,5 +333,171 @@ function updatePostMetrics($platform, $postId, $data) {
             
             $stmt->execute([$postId, $platform, $name, $value]);
         }
+    }
+    
+    // Update post_analytics table with real-time data
+    updatePostAnalyticsFromWebhook($postId, $platform, $data);
+}
+
+/**
+ * Store real-time analytics data from webhooks
+ */
+function storeRealTimeAnalytics($account, $platform, $data) {
+    global $db;
+    
+    try {
+        // Find the post this analytics data belongs to
+        $mediaId = $data['media_id'] ?? $data['post_id'] ?? null;
+        if (!$mediaId) return;
+        
+        // Find post by platform post ID
+        $stmt = $db->prepare(
+            "SELECT p.id FROM posts p 
+             WHERE JSON_EXTRACT(p.platform_posts_json, ?) = ?
+             AND p.client_id = ?"
+        );
+        
+        $platformPath = '$."' . $platform . '"';
+        $stmt->execute([$platformPath, $mediaId, $account['client_id']]);
+        $post = $stmt->fetch();
+        
+        if (!$post) return;
+        
+        // Extract metrics from webhook data
+        $analytics = extractAnalyticsFromWebhook($platform, $data);
+        
+        if ($analytics) {
+            // Store in post_analytics table
+            $stmt = $db->prepare(
+                "INSERT INTO post_analytics (
+                    post_id, account_id, platform_post_id, impressions, reach,
+                    engagement_rate, clicks, shares, saves, comments, likes,
+                    video_views, last_updated
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                ON DUPLICATE KEY UPDATE
+                    impressions = GREATEST(impressions, VALUES(impressions)),
+                    reach = GREATEST(reach, VALUES(reach)),
+                    engagement_rate = VALUES(engagement_rate),
+                    clicks = GREATEST(clicks, VALUES(clicks)),
+                    shares = GREATEST(shares, VALUES(shares)),
+                    saves = GREATEST(saves, VALUES(saves)),
+                    comments = GREATEST(comments, VALUES(comments)),
+                    likes = GREATEST(likes, VALUES(likes)),
+                    video_views = GREATEST(video_views, VALUES(video_views)),
+                    last_updated = NOW()"
+            );
+            
+            $stmt->execute([
+                $post['id'],
+                $account['id'],
+                $mediaId,
+                $analytics['impressions'] ?? 0,
+                $analytics['reach'] ?? 0,
+                $analytics['engagement_rate'] ?? 0,
+                $analytics['clicks'] ?? 0,
+                $analytics['shares'] ?? 0,
+                $analytics['saves'] ?? 0,
+                $analytics['comments'] ?? 0,
+                $analytics['likes'] ?? 0,
+                $analytics['video_views'] ?? 0
+            ]);
+        }
+        
+    } catch (Exception $e) {
+        error_log('Failed to store real-time analytics: ' . $e->getMessage());
+    }
+}
+
+/**
+ * Extract analytics data from webhook payload
+ */
+function extractAnalyticsFromWebhook($platform, $data) {
+    $analytics = [];
+    
+    switch ($platform) {
+        case 'instagram':
+            if (isset($data['metrics'])) {
+                foreach ($data['metrics'] as $metric) {
+                    $name = $metric['name'];
+                    $value = $metric['values'][0]['value'] ?? 0;
+                    
+                    switch ($name) {
+                        case 'impressions':
+                            $analytics['impressions'] = $value;
+                            break;
+                        case 'reach':
+                            $analytics['reach'] = $value;
+                            break;
+                        case 'video_views':
+                            $analytics['video_views'] = $value;
+                            break;
+                    }
+                }
+            }
+            break;
+            
+        case 'facebook':
+            // Extract Facebook-specific metrics
+            $analytics['likes'] = $data['likes']['count'] ?? 0;
+            $analytics['comments'] = $data['comments']['count'] ?? 0;
+            $analytics['shares'] = $data['shares']['count'] ?? 0;
+            break;
+    }
+    
+    return $analytics;
+}
+
+/**
+ * Update post analytics from webhook data
+ */
+function updatePostAnalyticsFromWebhook($postId, $platform, $data) {
+    global $db;
+    
+    // Get account for this post and platform
+    $stmt = $db->prepare(
+        "SELECT a.id FROM accounts a
+         JOIN posts p ON a.client_id = p.client_id
+         WHERE p.id = ? AND a.platform = ? AND a.is_active = 1"
+    );
+    $stmt->execute([$postId, $platform]);
+    $account = $stmt->fetch();
+    
+    if (!$account) return;
+    
+    // Extract platform post ID
+    $stmt = $db->prepare("SELECT platform_posts_json FROM posts WHERE id = ?");
+    $stmt->execute([$postId]);
+    $post = $stmt->fetch();
+    
+    if (!$post) return;
+    
+    $platformPosts = json_decode($post['platform_posts_json'], true) ?: [];
+    $platformPostId = $platformPosts[$platform] ?? null;
+    
+    if (!$platformPostId) return;
+    
+    // Extract and store analytics
+    $analytics = extractAnalyticsFromWebhook($platform, $data);
+    
+    if ($analytics) {
+        $stmt = $db->prepare(
+            "INSERT INTO post_analytics (
+                post_id, account_id, platform_post_id, likes, comments, shares, last_updated
+            ) VALUES (?, ?, ?, ?, ?, ?, NOW())
+            ON DUPLICATE KEY UPDATE
+                likes = GREATEST(likes, VALUES(likes)),
+                comments = GREATEST(comments, VALUES(comments)),
+                shares = GREATEST(shares, VALUES(shares)),
+                last_updated = NOW()"
+        );
+        
+        $stmt->execute([
+            $postId,
+            $account['id'],
+            $platformPostId,
+            $analytics['likes'] ?? 0,
+            $analytics['comments'] ?? 0,
+            $analytics['shares'] ?? 0
+        ]);
     }
 }

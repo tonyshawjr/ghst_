@@ -135,3 +135,38 @@ function formatBytes($size, $precision = 2) {
     
     return round(pow(1024, $base - floor($base)), $precision) . ' ' . $suffixes[floor($base)];
 }
+
+function formatRelativeTime($timestamp) {
+    $now = time();
+    $time = is_numeric($timestamp) ? $timestamp : strtotime($timestamp);
+    $diff = $now - $time;
+    
+    if ($diff < 60) {
+        return 'just now';
+    } elseif ($diff < 3600) {
+        $minutes = floor($diff / 60);
+        return $minutes . ' minute' . ($minutes > 1 ? 's' : '') . ' ago';
+    } elseif ($diff < 86400) {
+        $hours = floor($diff / 3600);
+        return $hours . ' hour' . ($hours > 1 ? 's' : '') . ' ago';
+    } elseif ($diff < 604800) {
+        $days = floor($diff / 86400);
+        return $days . ' day' . ($days > 1 ? 's' : '') . ' ago';
+    } else {
+        return date('M j, Y', $time);
+    }
+}
+
+/**
+ * Format large numbers with K, M, B suffixes
+ */
+function formatNumber($number) {
+    if ($number >= 1000000000) {
+        return round($number / 1000000000, 1) . 'B';
+    } elseif ($number >= 1000000) {
+        return round($number / 1000000, 1) . 'M';
+    } elseif ($number >= 1000) {
+        return round($number / 1000, 1) . 'K';
+    }
+    return number_format($number);
+}
