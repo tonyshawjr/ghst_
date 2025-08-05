@@ -12,6 +12,8 @@ if (php_sapi_name() !== 'cli' && (!isset($_GET['secret']) || $_GET['secret'] !==
 require_once 'config.php';
 require_once 'includes/Database.php';
 require_once 'includes/functions.php';
+require_once 'includes/platforms/Platform.php';
+require_once 'includes/exceptions/PlatformExceptions.php';
 
 // Set time limit for long-running processes
 set_time_limit(300); // 5 minutes
@@ -120,94 +122,96 @@ logCron('info', "Cron job completed. Processed: {$processedCount}, Failed: {$fai
  * Publish post to specific platform
  */
 function publishToPlatform($platform, $account, $post) {
-    switch ($platform) {
-        case 'instagram':
-            return publishToInstagram($account, $post);
-        case 'facebook':
-            return publishToFacebook($account, $post);
-        case 'linkedin':
-            return publishToLinkedIn($account, $post);
-        case 'twitter':
-            return publishToTwitter($account, $post);
-        case 'threads':
-            return publishToThreads($account, $post);
-        default:
-            return ['success' => false, 'error' => 'Unsupported platform', 'retry' => false];
+    try {
+        // Create platform instance
+        $platformClass = ucfirst($platform) . 'Platform';
+        if (!class_exists($platformClass)) {
+            return ['success' => false, 'error' => 'Unsupported platform: ' . $platform, 'retry' => false];
+        }
+        
+        $platformInstance = new $platformClass($account['id']);
+        
+        // Get media files if any
+        $mediaFiles = [];
+        if (!empty($post['media_json'])) {
+            $mediaIds = json_decode($post['media_json'], true);
+            if (!empty($mediaIds)) {
+                global $db;
+                $placeholders = str_repeat('?,', count($mediaIds) - 1) . '?';
+                $stmt = $db->prepare("SELECT * FROM media WHERE id IN ($placeholders) AND client_id = ?");
+                $stmt->execute(array_merge($mediaIds, [$post['client_id']]));
+                $mediaFiles = $stmt->fetchAll();
+            }
+        }
+        
+        // Prepare options based on platform
+        $options = [];
+        if (!empty($post['options_json'])) {
+            $options = json_decode($post['options_json'], true);
+        }
+        
+        // Attempt to post
+        $result = $platformInstance->post($post['content'], $mediaFiles, $options);
+        
+        // Update post with platform post ID
+        if (isset($result['platform_post_id'])) {
+            global $db;
+            $platformPosts = json_decode($post['platform_posts_json'], true) ?: [];
+            $platformPosts[$platform] = $result['platform_post_id'];
+            $stmt = $db->prepare("UPDATE posts SET platform_posts_json = ? WHERE id = ?");
+            $stmt->execute([json_encode($platformPosts), $post['id']]);
+        }
+        
+        return [
+            'success' => true,
+            'message' => $result['message'] ?? 'Successfully posted',
+            'retry' => false
+        ];
+        
+    } catch (PlatformRateLimitException $e) {
+        // Rate limit hit - retry later
+        return [
+            'success' => false,
+            'error' => $e->getMessage(),
+            'retry' => true,
+            'retry_after' => $e->getRetryAfter()
+        ];
+    } catch (PlatformAuthException $e) {
+        // Authentication failed - don't retry
+        return [
+            'success' => false,
+            'error' => 'Authentication failed: ' . $e->getMessage(),
+            'retry' => false
+        ];
+    } catch (PlatformNetworkException $e) {
+        // Network error - retry
+        return [
+            'success' => false,
+            'error' => 'Network error: ' . $e->getMessage(),
+            'retry' => true
+        ];
+    } catch (PlatformServerException $e) {
+        // Server error - retry
+        return [
+            'success' => false,
+            'error' => 'Platform server error: ' . $e->getMessage(),
+            'retry' => true
+        ];
+    } catch (PlatformValidationException $e) {
+        // Validation error - don't retry
+        return [
+            'success' => false,
+            'error' => 'Validation failed: ' . implode(', ', $e->getValidationErrors()),
+            'retry' => false
+        ];
+    } catch (Exception $e) {
+        // Other errors - don't retry by default
+        return [
+            'success' => false,
+            'error' => $e->getMessage(),
+            'retry' => false
+        ];
     }
-}
-
-/**
- * Instagram Publishing (via Facebook Graph API)
- */
-function publishToInstagram($account, $post) {
-    // Instagram requires media, check if provided
-    if (empty($post['media_url'])) {
-        return ['success' => false, 'error' => 'Instagram requires media', 'retry' => false];
-    }
-    
-    // This is a placeholder - actual implementation would use Facebook Graph API
-    // https://developers.facebook.com/docs/instagram-api/guides/content-publishing
-    
-    return [
-        'success' => false, 
-        'error' => 'Instagram API integration not yet implemented', 
-        'retry' => false
-    ];
-}
-
-/**
- * Facebook Publishing
- */
-function publishToFacebook($account, $post) {
-    // This is a placeholder - actual implementation would use Facebook Graph API
-    // https://developers.facebook.com/docs/graph-api/reference/page/feed
-    
-    return [
-        'success' => false, 
-        'error' => 'Facebook API integration not yet implemented', 
-        'retry' => false
-    ];
-}
-
-/**
- * LinkedIn Publishing
- */
-function publishToLinkedIn($account, $post) {
-    // This is a placeholder - actual implementation would use LinkedIn API
-    // https://docs.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/share-api
-    
-    return [
-        'success' => false, 
-        'error' => 'LinkedIn API integration not yet implemented', 
-        'retry' => false
-    ];
-}
-
-/**
- * Twitter/X Publishing
- */
-function publishToTwitter($account, $post) {
-    // This is a placeholder - actual implementation would use Twitter API v2
-    // https://developer.twitter.com/en/docs/twitter-api/tweets/manage-tweets/api-reference/post-tweets
-    
-    return [
-        'success' => false, 
-        'error' => 'Twitter API integration not yet implemented', 
-        'retry' => false
-    ];
-}
-
-/**
- * Threads Publishing
- */
-function publishToThreads($account, $post) {
-    // This is a placeholder - Threads API is still in development
-    
-    return [
-        'success' => false, 
-        'error' => 'Threads API integration not yet implemented', 
-        'retry' => false
-    ];
 }
 
 /**
