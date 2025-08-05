@@ -72,6 +72,16 @@ ghst_ is a powerful, mobile-responsive multi-client social media scheduling plat
 - **Foreign Key Safe Reset** - proper table deletion order without constraint errors
 - **System Information Display** - view app configuration and database details
 
+### 9. AI-Powered Content Suggestions
+- **Multi-Provider Support** - Configure both Claude (Anthropic) and OpenAI simultaneously
+- **Provider Selection** - Choose between Claude or ChatGPT for each generation
+- **User-Provided API Keys** - Users supply their own keys at their own cost
+- **Platform-Specific Content** - Optimized suggestions for each social platform
+- **Customizable Generation** - Tone, length, hashtags, and emoji options
+- **Real-Time Generation** - Instant AI-powered content creation
+- **Usage Tracking** - Monitor API usage and costs
+- **Seamless Integration** - Direct content transfer to post scheduler
+
 ## Installation
 
 ### Requirements
@@ -126,6 +136,7 @@ ghst_ is a powerful, mobile-responsive multi-client social media scheduling plat
     accounts.php  # Social accounts
     settings.php  # User settings (Profile, System Info, Reset)
     oauth-setup.php # OAuth platform configuration (conditional)
+    ai-suggestions.php # AI content generation
     switch-client.php # Client management
   /uploads        # User uploaded media
   /api           # API endpoints
@@ -135,6 +146,7 @@ ghst_ is a powerful, mobile-responsive multi-client social media scheduling plat
     db.php       # Database singleton
     functions.php # Helper functions
     layout.php   # Layout components
+    AIContentSuggestions.php # AI integration class
   /db            # Database schema
   /installer     # Installation wizard steps
   index.php      # Entry point
@@ -239,13 +251,20 @@ http://YOUR_COMPUTER_IP:8000
 - API for external integrations
 - Team collaboration features
 - A/B testing for posts
-- AI-powered content suggestions
+- AI image generation
+- Brand voice training
+- Competitor analysis
+- Trending topic integration
+- Multi-language support
 
 ## Support
+
 For issues or questions, check the UPDATES.md file for recent changes and known issues.
 
 ## License
+
 Proprietary - All rights reserved
 
 ---
+
 Built with 💀 by ghst_

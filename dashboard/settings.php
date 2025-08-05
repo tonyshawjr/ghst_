@@ -89,6 +89,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 break;
                 
+            case 'update_ai_settings':
+                if (!$client) break;
+                
+                $claudeApiKey = $_POST['claude_api_key'] ?? '';
+                $claudeModel = $_POST['claude_model'] ?? '';
+                $openaiApiKey = $_POST['openai_api_key'] ?? '';
+                $openaiModel = $_POST['openai_model'] ?? '';
+                
+                // Update both API keys
+                $stmt = $db->prepare("UPDATE clients SET claude_api_key = ?, claude_model = ?, openai_api_key = ?, openai_model = ? WHERE id = ?");
+                if ($stmt->execute([$claudeApiKey, $claudeModel, $openaiApiKey, $openaiModel, $client['id']])) {
+                    $message = 'AI settings updated successfully.';
+                    $client = $auth->getCurrentClient();
+                } else {
+                    $error = 'Failed to update AI settings.';
+                }
+                break;
+                
             case 'reset_installation':
                 $confirmText = $_POST['confirm_text'] ?? '';
                 
@@ -100,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $db->getConnection()->exec("SET FOREIGN_KEY_CHECKS = 0");
                         
                         // Drop all database tables (in order to avoid foreign key constraints)
-                        $tables = ['retry_queue', 'user_actions', 'logs', 'posts', 'media', 'accounts', 'brands', 'sessions', 'platform_limits', 'clients', 'users'];
+                        $tables = ['ai_suggestions', 'ai_usage_logs', 'post_reactions', 'post_metrics', 'analytics', 'notifications', 'webhook_logs', 'retry_queue', 'user_actions', 'logs', 'posts', 'media', 'accounts', 'brands', 'sessions', 'platform_limits', 'clients', 'users'];
                         foreach ($tables as $table) {
                             $db->getConnection()->exec("DROP TABLE IF EXISTS `$table`");
                         }
@@ -317,6 +335,91 @@ renderHeader('Settings');
                 </div>
             </form>
         </div>
+        
+        <!-- AI Settings -->
+        <div class="bg-gray-900 rounded-lg border border-gray-800 p-6">
+            <h3 class="text-lg font-semibold text-gray-200 mb-6">AI Content Suggestions</h3>
+            <p class="text-sm text-gray-400 mb-4">Configure API keys for both providers. You can choose which one to use when generating content.</p>
+            
+            <form method="POST" class="space-y-6">
+                <input type="hidden" name="csrf_token" value="<?= $auth->generateCSRFToken() ?>">
+                <input type="hidden" name="action" value="update_ai_settings">
+                
+                <!-- Claude Settings -->
+                <div class="border border-gray-700 rounded-lg p-4 space-y-4">
+                    <h4 class="font-medium text-purple-400">Claude (Anthropic)</h4>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">API Key</label>
+                        <input 
+                            type="password" 
+                            name="claude_api_key" 
+                            value="<?= !empty($client['claude_api_key']) ? str_repeat('*', 20) : '' ?>"
+                            placeholder="Enter your Claude API key"
+                            class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        >
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Model</label>
+                        <select 
+                            name="claude_model"
+                            class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        >
+                            <option value="claude-3-5-sonnet-20241022" <?= ($client['claude_model'] ?? '') === 'claude-3-5-sonnet-20241022' ? 'selected' : '' ?>>Claude 3.5 Sonnet</option>
+                            <option value="claude-3-5-haiku-20241022" <?= ($client['claude_model'] ?? '') === 'claude-3-5-haiku-20241022' ? 'selected' : '' ?>>Claude 3.5 Haiku</option>
+                            <option value="claude-3-opus-20240229" <?= ($client['claude_model'] ?? '') === 'claude-3-opus-20240229' ? 'selected' : '' ?>>Claude 3 Opus</option>
+                        </select>
+                    </div>
+                    
+                    <p class="text-xs text-gray-500">
+                        Get your API key: <a href="https://console.anthropic.com/api-keys" target="_blank" class="text-purple-400 hover:text-purple-300">console.anthropic.com</a>
+                    </p>
+                </div>
+                
+                <!-- OpenAI Settings -->
+                <div class="border border-gray-700 rounded-lg p-4 space-y-4">
+                    <h4 class="font-medium text-green-400">ChatGPT (OpenAI)</h4>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">API Key</label>
+                        <input 
+                            type="password" 
+                            name="openai_api_key" 
+                            value="<?= !empty($client['openai_api_key']) ? str_repeat('*', 20) : '' ?>"
+                            placeholder="Enter your OpenAI API key"
+                            class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        >
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-2">Model</label>
+                        <select 
+                            name="openai_model"
+                            class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        >
+                            <option value="gpt-4o" <?= ($client['openai_model'] ?? '') === 'gpt-4o' ? 'selected' : '' ?>>GPT-4o</option>
+                            <option value="gpt-4-turbo" <?= ($client['openai_model'] ?? '') === 'gpt-4-turbo' ? 'selected' : '' ?>>GPT-4 Turbo</option>
+                            <option value="gpt-3.5-turbo" <?= ($client['openai_model'] ?? '') === 'gpt-3.5-turbo' ? 'selected' : '' ?>>GPT-3.5 Turbo</option>
+                        </select>
+                    </div>
+                    
+                    <p class="text-xs text-gray-500">
+                        Get your API key: <a href="https://platform.openai.com/api-keys" target="_blank" class="text-green-400 hover:text-green-300">platform.openai.com</a>
+                    </p>
+                </div>
+                
+                <div class="text-xs text-gray-500">
+                    <p>Your API keys are encrypted and stored securely. Leave blank to keep existing keys.</p>
+                </div>
+                
+                <div class="flex justify-end">
+                    <button type="submit" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg text-white font-medium transition-colors">
+                        Update AI Settings
+                    </button>
+                </div>
+            </form>
+        </div>
         <?php endif; ?>
     </div>
 
@@ -505,6 +608,7 @@ function confirmReset() {
         'Are you absolutely sure you want to continue?'
     );
 }
+
 </script>
 
 <?php renderFooter(); ?>

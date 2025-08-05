@@ -335,7 +335,19 @@ renderHeader('Posts & Scheduler');
         <form id="createPostForm" onsubmit="createPost(event)">
             <!-- Content -->
             <div class="mb-4 lg:mb-6">
-                <label class="block text-sm font-medium text-gray-300 mb-2">Content</label>
+                <div class="flex items-center justify-between mb-2">
+                    <label class="block text-sm font-medium text-gray-300">Content</label>
+                    <button 
+                        type="button"
+                        onclick="openAISuggestions()"
+                        class="px-3 py-1 bg-purple-600 hover:bg-purple-700 rounded text-sm text-white transition-colors flex items-center"
+                    >
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        AI Suggestions
+                    </button>
+                </div>
                 <textarea 
                     id="postContent"
                     name="content"
@@ -582,6 +594,50 @@ function handleSwipe() {
         }
     }
 }
+
+// AI Suggestions Integration
+function openAISuggestions() {
+    // Save current form state
+    const selectedPlatforms = Array.from(document.querySelectorAll('input[name="platforms[]"]:checked')).map(cb => cb.value);
+    const currentContent = document.getElementById('postContent').value;
+    
+    // Open AI suggestions in a new window or modal
+    const params = new URLSearchParams({
+        platforms: selectedPlatforms.join(','),
+        content: currentContent
+    });
+    
+    // Check if AI suggestion was already fetched
+    const aiSuggestion = sessionStorage.getItem('ai_suggestion');
+    if (aiSuggestion) {
+        document.getElementById('postContent').value = aiSuggestion;
+        sessionStorage.removeItem('ai_suggestion');
+        updateCharacterCounts();
+        return;
+    }
+    
+    // Open AI suggestions page
+    window.open('ai-suggestions.php?' + params.toString(), 'aiSuggestions', 'width=800,height=600');
+}
+
+// Listen for AI suggestion selection
+window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'ai_suggestion') {
+        document.getElementById('postContent').value = event.data.content;
+        updateCharacterCounts();
+    }
+});
+
+// Check for AI suggestion on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const aiSuggestion = sessionStorage.getItem('ai_suggestion');
+    if (aiSuggestion) {
+        document.getElementById('postContent').value = aiSuggestion;
+        sessionStorage.removeItem('ai_suggestion');
+        updateCharacterCounts();
+        showCreateModal();
+    }
+});
 
 // Haptic feedback for supported devices
 function triggerHapticFeedback(type = 'light') {
