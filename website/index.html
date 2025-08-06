@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ghst_ - Own Your Workflow. Never Rent It Again.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Meta tags for social sharing -->
+    <meta name="description" content="ghst_ - Self-hosted social media management suite. One-time payment, unlimited clients, AI-powered strategy engine. Stop renting your tools.">
+    <meta property="og:title" content="ghst_ - Own Your Workflow. Never Rent It Again.">
+    <meta property="og:description" content="Self-hosted social media management with AI strategy engine. One-time payment, unlimited clients, no subscriptions.">
+    <meta property="og:type" content="website">
+    
+    <style>
+        body { 
+            font-family: 'JetBrains Mono', monospace; 
+            background: radial-gradient(ellipse at top, rgba(139, 92, 246, 0.1) 0%, rgba(0, 0, 0, 1) 50%);
+        }
+        .glow { 
+            text-shadow: 0 0 10px rgba(139, 92, 246, 0.5); 
+        }
+        .glow-intense { 
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+        }
+        .typing-effect {
+            overflow: hidden;
+            border-right: .15em solid #8b5cf6;
+            white-space: nowrap;
+            animation: typing 3.5s steps(40, end), blink-caret .75s step-end infinite;
+        }
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: #8b5cf6; }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        /* Ghost Animations */
+        @keyframes ghostFloat {
+            0%, 100% { transform: translateY(0px) translateX(0px); }
+            25% { transform: translateY(-8px) translateX(-3px); }
+            50% { transform: translateY(-15px) translateX(0px); }
+            75% { transform: translateY(-8px) translateX(3px); }
+        }
+        
+        @keyframes ghostPeek {
+            0% { transform: translateX(-100%); }
+            50% { transform: translateX(-30%); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        @keyframes ghostCelebrate {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.1) rotate(-5deg); }
+            50% { transform: scale(1.2) rotate(5deg); }
+            75% { transform: scale(1.1) rotate(-3deg); }
+        }
+        
+        @keyframes ghostSad {
+            0%, 100% { transform: translateY(0px) scaleY(1); }
+            50% { transform: translateY(5px) scaleY(0.95); }
+        }
+        
+        @keyframes ghostProgress {
+            0% { transform: translateX(-100%) scale(0.8); }
+            100% { transform: translateX(100vw) scale(0.8); }
+        }
+        
+        .ghost-float {
+            animation: ghostFloat 4s ease-in-out infinite;
+        }
+        
+        .ghost-peek {
+            animation: ghostPeek 8s ease-in-out infinite;
+            animation-delay: 3s;
+        }
+        
+        .ghost-celebrate {
+            animation: ghostCelebrate 0.8s ease-in-out;
+        }
+        
+        .ghost-sad {
+            animation: ghostSad 2s ease-in-out infinite;
+        }
+        
+        .ghost-progress {
+            position: fixed;
+            top: 4px;
+            left: 0;
+            z-index: 9999;
+            pointer-events: none;
+            width: 32px;
+            height: 32px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .ghost-progress.visible {
+            opacity: 1;
+            animation: ghostProgress 8s linear infinite;
+        }
+        
+        .ghost-easter-egg {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .ghost-easter-egg.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .ghost-loading {
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        .gradient-text {
+            background: linear-gradient(45deg, #8b5cf6, #a78bfa, #c4b5fd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Syntax highlighting */
+        .keyword { color: #ff79c6; }
+        .string { color: #f1fa8c; }
+        .comment { color: #6272a4; }
+        .method { color: #50fa7b; }
+        .url { color: #8be9fd; }
+        .number { color: #bd93f9; }
+        
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            input, button {
+                font-size: 16px;
+            }
+        }
+        .touch-target { min-height: 44px; }
+        
+        /* Scroll animations */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .slide-up {
+            animation: slideUp 0.6s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-black text-white">
+    <!-- Navigation -->
+    <!-- Ghost Progress Indicator -->
+    <div id="ghostProgress" class="ghost-progress">
+        <svg viewBox="0 0 792 612" class="w-full h-full">
+            <path fill="#8b5cf6" d="M513.6,205.6c-.8-.6-1.5-1.2-2-1.5-57.6-38.5-172.4-42.5-225.3,7-37.6,35.2-25.4,75.2-27.1,121.7-2,51.7-17,84.5-27.1,132-4.7,22-3.8,38.8,16.7,49.9,.5.3,1.4.6,2.5.9,3.7-.8,7.3-2,10.8-3.7,13.7-6.9,23.4-23.6,39.1-25.6,26.1-3.3,34.7,20.6,50.6,35,28.3,25.5,70.1,25.9,98.9,.9,11-9.5,23.1-31.6,36.2-35.2,17.1-4.8,26.8,11.2,40.8,16.9,30.2,12.2,57-17,46.7-46.7-15.6-65.3-27.8-131.6-44-196.7-3.8-15.2-8.9-37.7-16.8-54.8ZM367.3,293.5c-39,9.7-43.7-77.3-7.4-81.2,36-3.9,39.4,73.2,7.4,81.2ZM461.9,294.2c-34.9-.3-35.1-77.7-3.5-82,39.8-5.4,40.4,82.3,3.5,82Z"/>
+            <path fill="#101827" d="M359.8,212.2c-36.3,3.9-31.5,90.9,7.4,81.2,32-8,28.5-85.1-7.4-81.2Z"/>
+            <path fill="#101827" d="M458.4,212.2c-31.6,4.3-31.4,81.7,3.5,82,36.9,.3,36.4-87.4-3.5-82Z"/>
+        </svg>
+    </div>
+    
+    <nav class="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-sm border-b border-gray-800" x-data="{ mobileMenuOpen: false }">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <h1 class="text-2xl font-bold">
+                        <span class="text-purple-500">*</span> ghst_
+                    </h1>
+                </div>
+                
+                <!-- Desktop menu -->
+                <div class="hidden md:block">
+                    <div class="flex items-center space-x-8">
+                        <a href="#features" class="text-gray-300 hover:text-white transition-colors">Features</a>
+                        <a href="#pricing" class="text-gray-300 hover:text-white transition-colors">Pricing</a>
+                        <a href="#docs" class="text-gray-300 hover:text-white transition-colors">Docs</a>
+                        <a href="#demo" class="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg transition-colors">Demo</a>
+                        <a href="#buy" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition-colors glow-intense">Buy Now</a>
+                    </div>
+                </div>
+                
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button @click="mobileMenuOpen = !mobileMenuOpen" class="text-gray-300 hover:text-white transition-all duration-300 touch-target hover:glow">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile menu -->
+        <div x-show="mobileMenuOpen" x-transition class="md:hidden backdrop-blur border-b border-gray-800/50">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="#features" class="block px-3 py-2 text-gray-300 hover:text-white transition-all duration-300 rounded touch-target">Features</a>
+                <a href="#pricing" class="block px-3 py-2 text-gray-300 hover:text-white transition-all duration-300 rounded touch-target">Pricing</a>
+                <a href="#docs" class="block px-3 py-2 text-gray-300 hover:text-white transition-all duration-300 rounded touch-target">Docs</a>
+                <a href="#demo" class="block px-3 py-2 text-gray-300 hover:text-white transition-all duration-300 rounded touch-target">Demo</a>
+                <a href="#buy" class="btn-primary block px-3 py-2 text-white rounded-lg mx-3 text-center touch-target">Buy Now</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <div class="mb-8">
+                    <span class="inline-block bg-gray-800 border border-gray-700 px-4 py-2 rounded-full text-sm text-gray-300 mb-8">
+                        🚀 Now available • One-time purchase • No subscriptions
+                    </span>
+                </div>
+                
+                <div class="relative">
+                    <h1 class="text-5xl sm:text-6xl lg:text-7xl font-bold mb-8 gradient-text">
+                        Own Your Workflow.<br>Never Rent It Again.
+                    </h1>
+                    
+                    <!-- Peeking Ghost -->
+                    <div class="absolute -right-8 top-1/2 transform -translate-y-1/2 ghost-peek opacity-30 hidden lg:block">
+                        <svg class="w-16 h-16" viewBox="0 0 792 612">
+                            <path fill="#8b5cf6" opacity="0.6" d="M513.6,205.6c-.8-.6-1.5-1.2-2-1.5-57.6-38.5-172.4-42.5-225.3,7-37.6,35.2-25.4,75.2-27.1,121.7-2,51.7-17,84.5-27.1,132-4.7,22-3.8,38.8,16.7,49.9,.5.3,1.4.6,2.5,.9,3.7-.8,7.3-2,10.8-3.7,13.7-6.9,23.4-23.6,39.1-25.6,26.1-3.3,34.7,20.6,50.6,35,28.3,25.5,70.1,25.9,98.9,.9,11-9.5,23.1-31.6,36.2-35.2,17.1-4.8,26.8,11.2,40.8,16.9,30.2,12.2,57-17,46.7-46.7-15.6-65.3-27.8-131.6-44-196.7-3.8-15.2-8.9-37.7-16.8-54.8ZM367.3,293.5c-39,9.7-43.7-77.3-7.4-81.2,36-3.9,39.4,73.2,7.4,81.2ZM461.9,294.2c-34.9-.3-35.1-77.7-3.5-82,39.8-5.4,40.4,82.3,3.5,82Z"/>
+                            <path fill="#101827" d="M359.8,212.2c-36.3,3.9-31.5,90.9,7.4,81.2,32-8,28.5-85.1-7.4-81.2Z"/>
+                            <path fill="#101827" d="M458.4,212.2c-31.6,4.3-31.4,81.7,3.5,82,36.9,.3,36.4-87.4-3.5-82Z"/>
+                        </svg>
+                    </div>
+                </div>
+                
+                <p class="text-xl sm:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto leading-relaxed">
+                    ghst_ is the last social media management platform you'll ever pay for. 
+                    <span class="text-purple-400">One-time purchase.</span> 
+                    <span class="text-green-400">Fully self-hosted.</span> 
+                    <span class="text-blue-400">Unlimited clients.</span> 
+                    <span class="text-yellow-400">Powered by AI.</span>
+                </p>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+                    <span class="text-gray-400">Built for:</span>
+                    <div class="flex flex-wrap gap-2 justify-center">
+                        <span class="bg-gray-800 border border-gray-700 px-3 py-1 rounded-full text-sm">Freelancers</span>
+                        <span class="bg-gray-800 border border-gray-700 px-3 py-1 rounded-full text-sm">Coaches</span>
+                        <span class="bg-gray-800 border border-gray-700 px-3 py-1 rounded-full text-sm">Consultants</span>
+                        <span class="bg-gray-800 border border-gray-700 px-3 py-1 rounded-full text-sm">Boutique Agencies</span>
+                    </div>
+                </div>
+                
+                <div class="mb-12">
+                    <p class="text-lg text-gray-400 mb-2">Includes: <span class="text-purple-400 font-semibold">ghst_wrtr</span> - Strategy Engine<sup class="text-xs text-purple-400 ml-0.5">AI</sup></p>
+                    <p class="text-sm text-gray-500">Pricing: One-time payment — no subscriptions, no limits</p>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+                    <a href="#buy" class="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all transform hover:scale-105 glow-intense">
+                        Buy Now - $349
+                    </a>
+                    <a href="#demo" class="bg-gray-800 hover:bg-gray-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all border border-gray-700">
+                        See Demo
+                    </a>
+                </div>
+                
+                <blockquote class="text-gray-400 italic text-lg relative hover-ghost-trigger">
+                    "It's like Buffer and Jasper had a <span class="hacker-baby-trigger cursor-pointer">hacker baby</span> and gave it a hoodie."
+                    
+                    <!-- Easter Egg Ghost with Sunglasses -->
+                    <div class="ghost-easter-egg" id="hackerGhost">
+                        <svg class="w-full h-full" viewBox="0 0 792 612">
+                            <path fill="#8b5cf6" d="M513.6,205.6c-.8-.6-1.5-1.2-2-1.5-57.6-38.5-172.4-42.5-225.3,7-37.6,35.2-25.4,75.2-27.1,121.7-2,51.7-17,84.5-27.1,132-4.7,22-3.8,38.8,16.7,49.9,.5.3,1.4.6,2.5,.9,3.7-.8,7.3-2,10.8-3.7,13.7-6.9,23.4-23.6,39.1-25.6,26.1-3.3,34.7,20.6,50.6,35,28.3,25.5,70.1,25.9,98.9,.9,11-9.5,23.1-31.6,36.2-35.2,17.1-4.8,26.8,11.2,40.8,16.9,30.2,12.2,57-17,46.7-46.7-15.6-65.3-27.8-131.6-44-196.7-3.8-15.2-8.9-37.7-16.8-54.8ZM367.3,293.5c-39,9.7-43.7-77.3-7.4-81.2,36-3.9,39.4,73.2,7.4,81.2ZM461.9,294.2c-34.9-.3-35.1-77.7-3.5-82,39.8-5.4,40.4,82.3,3.5,82Z"/>
+                            <!-- Sunglasses -->
+                            <rect fill="#000" x="320" y="200" width="60" height="20" rx="10"/>
+                            <rect fill="#000" x="420" y="200" width="60" height="20" rx="10"/>
+                            <rect fill="#000" x="380" y="205" width="40" height="3"/>
+                            <circle fill="#101827" cx="350" cy="210" r="25"/>
+                            <circle fill="#101827" cx="450" cy="210" r="25"/>
+                        </svg>
+                    </div>
+                </blockquote>
+            </div>
+            
+            <!-- Product Feature Cards -->
+            <div class="max-w-5xl mx-auto">
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="bg-gray-900 rounded-lg p-6 border border-gray-800 hover:border-purple-500 transition-all transform hover:-translate-y-1">
+                        <div class="text-purple-400 text-3xl mb-3">📅</div>
+                        <h3 class="font-bold mb-2">Visual Calendar</h3>
+                        <p class="text-sm text-gray-400">Drag & drop scheduling across all platforms. See your entire content strategy at a glance.</p>
+                    </div>
+                    <div class="bg-gray-900 rounded-lg p-6 border border-gray-800 hover:border-purple-500 transition-all transform hover:-translate-y-1">
+                        <div class="text-purple-400 text-3xl mb-3">🤖</div>
+                        <h3 class="font-bold mb-2">AI Campaigns</h3>
+                        <p class="text-sm text-gray-400">Generate 12-week strategies with ghst_wrtr. Complete campaigns in 5 minutes.</p>
+                    </div>
+                    <div class="bg-gray-900 rounded-lg p-6 border border-gray-800 hover:border-purple-500 transition-all transform hover:-translate-y-1">
+                        <div class="text-purple-400 text-3xl mb-3">📊</div>
+                        <h3 class="font-bold mb-2">Real Analytics</h3>
+                        <p class="text-sm text-gray-400">Track engagement, reach, and conversions. Export branded reports for clients.</p>
+                    </div>
+                </div>
+                <div class="text-center mt-8">
+                    <p class="text-sm text-gray-500">Install on your server in 5 minutes • Manage unlimited clients • Keep 100% of your revenue</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="py-16 px-4 sm:px-6 lg:px-8 bg-gray-900/50">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl font-bold mb-8 text-red-400">Monthly SaaS platforms weren't built for you.</h2>
+            
+            <!-- Demo: 404/Error State with Friendly Ghost -->
+            <div class="mb-12 bg-gray-900 border border-gray-800 rounded-lg p-6 max-w-md mx-auto">
+                <div class="flex items-center justify-center mb-4">
+                    <div class="ghost-sad mr-4">
+                        <svg class="w-12 h-12" viewBox="0 0 792 612">
+                            <path fill="#ef4444" d="M513.6,205.6c-.8-.6-1.5-1.2-2-1.5-57.6-38.5-172.4-42.5-225.3,7-37.6,35.2-25.4,75.2-27.1,121.7-2,51.7-17,84.5-27.1,132-4.7,22-3.8,38.8,16.7,49.9,.5.3,1.4.6,2.5,.9,3.7-.8,7.3-2,10.8-3.7,13.7-6.9,23.4-23.6,39.1-25.6,26.1-3.3,34.7,20.6,50.6,35,28.3,25.5,70.1,25.9,98.9,.9,11-9.5,23.1-31.6,36.2-35.2,17.1-4.8,26.8,11.2,40.8,16.9,30.2,12.2,57-17,46.7-46.7-15.6-65.3-27.8-131.6-44-196.7-3.8-15.2-8.9-37.7-16.8-54.8ZM367.3,293.5c-39,9.7-43.7-77.3-7.4-81.2,36-3.9,39.4,73.2,7.4,81.2ZM461.9,294.2c-34.9-.3-35.1-77.7-3.5-82,39.8-5.4,40.4,82.3,3.5,82Z"/>
+                            <!-- Sad eyes -->
+                            <ellipse fill="#000" cx="360" cy="220" rx="8" ry="15" transform="rotate(15 360 220)"/>
+                            <ellipse fill="#000" cx="460" cy="220" rx="8" ry="15" transform="rotate(-15 460 220)"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-red-400">Even errors are friendly</h3>
+                        <p class="text-gray-500 text-sm">Your ghost never leaves you hanging</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8 mb-12">
+                <div class="bg-gray-900 border border-gray-800 rounded-lg p-6">
+                    <div class="text-red-400 mb-4">❌</div>
+                    <h3 class="text-lg font-semibold mb-2">You're not managing 200 clients</h3>
+                    <p class="text-gray-400 text-sm">Enterprise features you'll never use</p>
+                </div>
+                
+                <div class="bg-gray-900 border border-gray-800 rounded-lg p-6">
+                    <div class="text-red-400 mb-4">❌</div>
+                    <h3 class="text-lg font-semibold mb-2">You're not an enterprise team</h3>
+                    <p class="text-gray-400 text-sm">Paying for seats you don't need</p>
+                </div>
+                
+                <div class="bg-gray-900 border border-gray-800 rounded-lg p-6">
+                    <div class="text-green-400 mb-4">✓</div>
+                    <h3 class="text-lg font-semibold mb-2">You're a strategist. A builder. A creative operator.</h3>
+                    <p class="text-gray-400 text-sm">You need tools that work for YOU</p>
+                </div>
+                
+                <div class="bg-gray-900 border border-gray-800 rounded-lg p-6">
+                    <div class="text-red-400 mb-4">💸</div>
+                    <h3 class="text-lg font-semibold mb-2">But you're paying $99/month for bloated tools</h3>
+                    <p class="text-gray-400 text-sm">$1,188/year for features you don't use</p>
+                </div>
+            </div>
+            
+            <h3 class="text-2xl font-bold text-purple-400 mb-4">What if you owned the system that runs your entire SMM business?</h3>
+            
+            <!-- Demo: Empty State with Lonely Ghost -->
+            <div class="mt-8 bg-gray-900 border border-gray-800 rounded-lg p-8 max-w-md mx-auto">
+                <div class="text-center">
+                    <div class="ghost-float mb-4 inline-block">
+                        <svg class="w-16 h-16" viewBox="0 0 792 612">
+                            <path fill="#6b7280" opacity="0.7" d="M513.6,205.6c-.8-.6-1.5-1.2-2-1.5-57.6-38.5-172.4-42.5-225.3,7-37.6,35.2-25.4,75.2-27.1,121.7-2,51.7-17,84.5-27.1,132-4.7,22-3.8,38.8,16.7,49.9,.5.3,1.4.6,2.5,.9,3.7-.8,7.3-2,10.8-3.7,13.7-6.9,23.4-23.6,39.1-25.6,26.1-3.3,34.7,20.6,50.6,35,28.3,25.5,70.1,25.9,98.9,.9,11-9.5,23.1-31.6,36.2-35.2,17.1-4.8,26.8,11.2,40.8,16.9,30.2,12.2,57-17,46.7-46.7-15.6-65.3-27.8-131.6-44-196.7-3.8-15.2-8.9-37.7-16.8-54.8ZM367.3,293.5c-39,9.7-43.7-77.3-7.4-81.2,36-3.9,39.4,73.2,7.4,81.2ZM461.9,294.2c-34.9-.3-35.1-77.7-3.5-82,39.8-5.4,40.4,82.3,3.5,82Z"/>
+                            <path fill="#374151" d="M359.8,212.2c-36.3,3.9-31.5,90.9,7.4,81.2,32-8,28.5-85.1-7.4-81.2Z"/>
+                            <path fill="#374151" d="M458.4,212.2c-31.6,4.3-31.4,81.7,3.5,82,36.9,.3,36.4-87.4-3.5-82Z"/>
+                        </svg>
+                    </div>
+                    <h4 class="text-gray-400 font-medium mb-2">No posts scheduled</h4>
+                    <p class="text-gray-500 text-sm">Your ghost is waiting to help you create something amazing</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section class="py-16 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl font-bold mb-8 gradient-text">Meet ghst_</h2>
+                
+                <!-- Demo: Loading State with Ghost -->
+                <div class="mb-8 bg-gray-900 border border-gray-800 rounded-lg p-6 max-w-sm mx-auto">
+                    <div class="flex items-center justify-center">
+                        <div class="ghost-loading ghost-float">
+                            <svg class="w-8 h-8" viewBox="0 0 792 612">
+                                <path fill="#8b5cf6" d="M513.6,205.6c-.8-.6-1.5-1.2-2-1.5-57.6-38.5-172.4-42.5-225.3,7-37.6,35.2-25.4,75.2-27.1,121.7-2,51.7-17,84.5-27.1,132-4.7,22-3.8,38.8,16.7,49.9,.5.3,1.4.6,2.5,.9,3.7-.8,7.3-2,10.8-3.7,13.7-6.9,23.4-23.6,39.1-25.6,26.1-3.3,34.7,20.6,50.6,35,28.3,25.5,70.1,25.9,98.9,.9,11-9.5,23.1-31.6,36.2-35.2,17.1-4.8,26.8,11.2,40.8,16.9,30.2,12.2,57-17,46.7-46.7-15.6-65.3-27.8-131.6-44-196.7-3.8-15.2-8.9-37.7-16.8-54.8ZM367.3,293.5c-39,9.7-43.7-77.3-7.4-81.2,36-3.9,39.4,73.2,7.4,81.2ZM461.9,294.2c-34.9-.3-35.1-77.7-3.5-82,39.8-5.4,40.4,82.3,3.5,82Z"/>
+                                <path fill="#101827" d="M359.8,212.2c-36.3,3.9-31.5,90.9,7.4,81.2,32-8,28.5-85.1-7.4-81.2Z"/>
+                                <path fill="#101827" d="M458.4,212.2c-31.6,4.3-31.4,81.7,3.5,82,36.9,.3,36.4-87.4-3.5-82Z"/>
+                            </svg>
+                        </div>
+                        <span class="text-gray-400 ml-3">Your ghost never sleeps...</span>
+                    </div>
+                </div>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-purple-500 transition-colors">
+                        <div class="text-green-400 text-2xl mb-2">✓</div>
+                        <h3 class="font-semibold mb-2">Pay once, use forever</h3>
+                        <p class="text-gray-400 text-sm">No monthly fees. Ever.</p>
+                    </div>
+                    
+                    <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-purple-500 transition-colors">
+                        <div class="text-green-400 text-2xl mb-2">🏠</div>
+                        <h3 class="font-semibold mb-2">Install on your own server</h3>
+                        <p class="text-gray-400 text-sm">Your data, your rules</p>
+                    </div>
+                    
+                    <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-purple-500 transition-colors">
+                        <div class="text-green-400 text-2xl mb-2">∞</div>
+                        <h3 class="font-semibold mb-2">Connect unlimited clients</h3>
+                        <p class="text-gray-400 text-sm">Scale without limits</p>
+                    </div>
+                    
+                    <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-purple-500 transition-colors">
+                        <div class="text-green-400 text-2xl mb-2">📱</div>
+                        <h3 class="font-semibold mb-2">Schedule to all major platforms</h3>
+                        <p class="text-gray-400 text-sm">Twitter, Instagram, LinkedIn, Facebook</p>
+                    </div>
+                    
+                    <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-purple-500 transition-colors">
+                        <div class="text-green-400 text-2xl mb-2">📊</div>
+                        <h3 class="font-semibold mb-2">Pull real analytics</h3>
+                        <p class="text-gray-400 text-sm">No guesswork, real data</p>
+                    </div>
+                    
+                    <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-purple-500 transition-colors">
+                        <div class="text-green-400 text-2xl mb-2">🤖</div>
+                        <h3 class="font-semibold mb-2">Create entire 12-week campaigns using AI</h3>
+                        <p class="text-gray-400 text-sm">Strategy automation at its finest</p>
+                    </div>
+                    
+                    <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-purple-500 transition-colors">
+                        <div class="text-green-400 text-2xl mb-2">🎨</div>
+                        <h3 class="font-semibold mb-2">White-label everything</h3>
+                        <p class="text-gray-400 text-sm">Your brand, your clients</p>
+                    </div>
+                    
+                    <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-purple-500 transition-colors">
+                        <div class="text-green-400 text-2xl mb-2">🔓</div>
+                        <h3 class="font-semibold mb-2">Full source code access</h3>
+                        <p class="text-gray-400 text-sm">Customize anything you want</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-16 px-4 sm:px-6 lg:px-8 bg-gray-900/30">
+        <div class="max-w-7xl mx-auto">
+            <!-- ghst_wrtr Feature -->
+            <div class="mb-20">
+                <div class="grid lg:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h2 class="text-4xl font-bold mb-6">
+                            <span class="text-purple-400">ghst_wrtr:</span> Strategy Engine<sup class="text-xs text-purple-400 ml-0.5">AI</sup>
+                        </h2>
+                        <ul class="space-y-4 text-lg">
+                            <li class="flex items-center">
+                                <span class="text-green-400 mr-3">✓</span>
+                                Input goal, tone, offer
+                            </li>
+                            <li class="flex items-center">
+                                <span class="text-green-400 mr-3">✓</span>
+                                Upload engagement data
+                            </li>
+                            <li class="flex items-center">
+                                <span class="text-green-400 mr-3">✓</span>
+                                Get complete 12-week plan
+                            </li>
+                            <li class="flex items-center">
+                                <span class="text-green-400 mr-3">✓</span>
+                                Edit/regenerate weeks
+                            </li>
+                            <li class="flex items-center">
+                                <span class="text-green-400 mr-3">✓</span>
+                                Export branded PDFs
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-gray-900 rounded-lg p-6 border border-gray-800">
+                        <div class="text-sm text-gray-500 mb-4">5-Step Campaign Wizard</div>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-3">
+                                <span class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                                <span class="text-sm">Set campaign goals & KPIs</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+                                <span class="text-sm">Define your offer & CTA</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-xs font-bold">3</span>
+                                <span class="text-sm">Choose voice & tone</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-xs font-bold">4</span>
+                                <span class="text-sm">Upload analytics (optional)</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-xs font-bold">5</span>
+                                <span class="text-sm">Generate & customize</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-800 text-xs text-gray-500">
+                            ✓ 84+ posts • 12 weeks • Hashtags • Visual ideas • CTAs
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Plan & Schedule Feature -->
+            <div class="mb-20">
+                <div class="grid lg:grid-cols-2 gap-12 items-center">
+                    <div class="bg-gray-900 rounded-lg p-6 border border-gray-800">
+                        <div class="text-sm text-gray-500 mb-4">Visual Calendar Interface</div>
+                        <div class="grid grid-cols-7 gap-1 mb-4">
+                            <div class="text-xs text-gray-600 text-center">M</div>
+                            <div class="text-xs text-gray-600 text-center">T</div>
+                            <div class="text-xs text-gray-600 text-center">W</div>
+                            <div class="text-xs text-gray-600 text-center">T</div>
+                            <div class="text-xs text-gray-600 text-center">F</div>
+                            <div class="text-xs text-gray-600 text-center">S</div>
+                            <div class="text-xs text-gray-600 text-center">S</div>
+                            
+                            <div class="h-10 bg-gray-800 rounded"></div>
+                            <div class="h-10 bg-gray-800 rounded relative">
+                                <div class="absolute top-1 left-1 w-2 h-2 bg-purple-500 rounded-full"></div>
+                            </div>
+                            <div class="h-10 bg-gray-800 rounded"></div>
+                            <div class="h-10 bg-gray-800 rounded relative">
+                                <div class="absolute top-1 left-1 w-2 h-2 bg-green-500 rounded-full"></div>
+                            </div>
+                            <div class="h-10 bg-gray-800 rounded relative">
+                                <div class="absolute top-1 left-1 w-2 h-2 bg-blue-500 rounded-full"></div>
+                                <div class="absolute top-1 right-1 w-2 h-2 bg-purple-500 rounded-full"></div>
+                            </div>
+                            <div class="h-10 bg-gray-800 rounded"></div>
+                            <div class="h-10 bg-gray-800 rounded relative">
+                                <div class="absolute top-1 left-1 w-2 h-2 bg-green-500 rounded-full"></div>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2 text-xs">
+                                <span class="w-2 h-2 bg-purple-500 rounded-full"></span>
+                                <span>Instagram</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-xs">
+                                <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                                <span>LinkedIn</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-xs">
+                                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                                <span>Twitter/X</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h2 class="text-4xl font-bold mb-6">Plan & Schedule</h2>
+                        <ul class="space-y-4 text-lg">
+                            <li class="flex items-center">
+                                <span class="text-green-400 mr-3">✓</span>
+                                Cross-platform scheduling
+                            </li>
+                            <li class="flex items-center">
+                                <span class="text-green-400 mr-3">✓</span>
+                                Drag-and-drop calendar
+                            </li>
+                            <li class="flex items-center">
+                                <span class="text-green-400 mr-3">✓</span>
+                                Live post previews
+                            </li>
+                            <li class="flex items-center">
+                                <span class="text-green-400 mr-3">✓</span>
+                                Smart hashtag sets
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analytics Feature -->
+            <div class="mb-20">
+                <div class="grid lg:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h2 class="text-4xl font-bold mb-6">Analytics & Reports</h2>
+                        <ul class="space-y-4 text-lg">
+                            <li class="flex items-center">
+                                <span class="text-green-400 mr-3">✓</span>
+                                Real-time dashboard
+                            </li>
+                            <li class="flex items-center">
+                                <span class="text-green-400 mr-3">✓</span>
+                                Best times to post
+                            </li>
+                            <li class="flex items-center">
+                                <span class="text-green-400 mr-3">✓</span>
+                                Top performing content
+                            </li>
+                            <li class="flex items-center">
+                                <span class="text-green-400 mr-3">✓</span>
+                                Branded PDF exports
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-gray-900 rounded-lg p-6 border border-gray-800">
+                        <div class="flex items-center justify-between mb-4">
+                            <p class="text-sm text-gray-500"># Real-time analytics</p>
+                            <div class="flex space-x-1">
+                                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse" style="animation-delay: 0.2s"></span>
+                            </div>
+                        </div>
+                        <!-- Analytics Dashboard Mockup -->
+                        <div class="space-y-4">
+                            <!-- Client Selector -->
+                            <div class="flex items-center justify-between p-3 bg-black rounded border border-gray-700">
+                                <span class="text-sm">📊 Fitness Coach</span>
+                                <span class="text-xs text-gray-500">Last 30 days ▼</span>
+                            </div>
+                            
+                            <!-- Metrics Grid -->
+                            <div class="grid grid-cols-3 gap-2">
+                                <div class="p-3 bg-gradient-to-br from-green-900/20 to-black rounded border border-green-800">
+                                    <div class="text-2xl font-bold text-green-400">8.4%</div>
+                                    <div class="text-xs text-gray-500">Engagement</div>
+                                </div>
+                                <div class="p-3 bg-gradient-to-br from-purple-900/20 to-black rounded border border-purple-800">
+                                    <div class="text-2xl font-bold text-purple-400">147K</div>
+                                    <div class="text-xs text-gray-500">Reach</div>
+                                </div>
+                                <div class="p-3 bg-gradient-to-br from-blue-900/20 to-black rounded border border-blue-800">
+                                    <div class="text-2xl font-bold text-blue-400">+23%</div>
+                                    <div class="text-xs text-gray-500">Growth</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Export Button -->
+                            <button class="w-full py-2 bg-purple-600 hover:bg-purple-700 rounded text-sm font-medium transition-colors">
+                                📄 Export Branded Report (PDF)
+                            </button>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-800 text-xs text-gray-600">
+                            <span class="text-green-400">✓ Live data</span> • <span class="text-purple-400">PDF ready</span> • <span class="text-blue-400">White-labeled</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- White Label Feature -->
+            <div>
+                <div class="grid lg:grid-cols-2 gap-12 items-center">
+                    <div class="bg-gray-900 rounded-lg p-6 border border-gray-800">
+                        <div class="flex items-center justify-between mb-4">
+                            <p class="text-sm text-gray-500"># Your brand everywhere</p>
+                            <div class="flex space-x-1">
+                                <span class="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></span>
+                                <span class="w-2 h-2 bg-purple-500 rounded-full animate-pulse" style="animation-delay: 0.3s"></span>
+                            </div>
+                        </div>
+                        <!-- Branding Interface Mockup -->
+                        <div class="space-y-4">
+                            <!-- Logo Upload -->
+                            <div class="p-3 bg-black rounded border border-gray-700">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded flex items-center justify-center text-white font-bold">YA</div>
+                                        <div>
+                                            <div class="text-sm font-medium">Your Agency</div>
+                                            <div class="text-xs text-gray-500">Logo uploaded ✓</div>
+                                        </div>
+                                    </div>
+                                    <button class="text-xs text-purple-400 hover:text-purple-300">Change</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Color Picker -->
+                            <div class="p-3 bg-black rounded border border-gray-700">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm">Brand Color</span>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-6 h-6 rounded" style="background: #ff6b35"></div>
+                                        <span class="text-xs text-gray-500">#ff6b35</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Domain -->
+                            <div class="p-3 bg-black rounded border border-gray-700">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm">Client Portal</span>
+                                    <span class="text-xs text-gray-500">your-domain.com</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Apply Button -->
+                            <button class="w-full py-2 bg-green-600 hover:bg-green-700 rounded text-sm font-medium transition-colors">
+                                ✓ Apply to All Dashboards
+                            </button>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-800 text-xs text-gray-600">
+                            <span class="text-green-400">✓ Brand applied</span> • <span class="text-purple-400">Dashboards updated</span> • <span class="text-blue-400">Reports styled</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h2 class="text-4xl font-bold mb-6">White-Label Everything</h2>
+                        <ul class="space-y-4 text-lg">
+                            <li class="flex items-center">
+                                <span class="text-green-400 mr-3">✓</span>
+                                Upload your logo, colors, fonts
+                            </li>
+                            <li class="flex items-center">
+                                <span class="text-green-400 mr-3">✓</span>
+                                White-label dashboards
+                            </li>
+                            <li class="flex items-center">
+                                <span class="text-green-400 mr-3">✓</span>
+                                Personalized client reports
+                            </li>
+                            <li class="flex items-center">
+                                <span class="text-green-400 mr-3">✓</span>
+                                Your domain, your rules
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Flexibility Section -->
+    <section class="py-16 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl font-bold mb-8 gradient-text">Use the brain you prefer.</h2>
+            <p class="text-xl text-gray-300 mb-12">Connect your own Claude or OpenAI API keys. Your choice, your control.</p>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-gray-900 border border-gray-800 rounded-lg p-8 hover:border-purple-500 transition-colors">
+                    <div class="text-4xl mb-4">🧠</div>
+                    <h3 class="text-xl font-semibold mb-4">Claude 3.5 Sonnet</h3>
+                    <p class="text-gray-400">Perfect for strategy, nuanced content, and creative campaigns.</p>
+                </div>
+                
+                <div class="bg-gray-900 border border-gray-800 rounded-lg p-8 hover:border-purple-500 transition-colors">
+                    <div class="text-4xl mb-4">⚡</div>
+                    <h3 class="text-xl font-semibold mb-4">OpenAI GPT-4</h3>
+                    <p class="text-gray-400">Lightning fast for bulk content generation and automation.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Specs Section -->
+    <section class="py-16 px-4 sm:px-6 lg:px-8 bg-gray-900/30">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold mb-8">Built for the Modern Web</h2>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 text-center">
+                    <div class="text-3xl mb-4">🐘</div>
+                    <h3 class="font-semibold mb-2">PHP 8+ / MySQL</h3>
+                    <p class="text-gray-400 text-sm">Battle-tested stack</p>
+                </div>
+                
+                <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 text-center">
+                    <div class="text-3xl mb-4">⏰</div>
+                    <h3 class="font-semibold mb-2">Cron-based automation</h3>
+                    <p class="text-gray-400 text-sm">Rock-solid scheduling</p>
+                </div>
+                
+                <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 text-center">
+                    <div class="text-3xl mb-4">🌙</div>
+                    <h3 class="font-semibold mb-2">Dark mode UI</h3>
+                    <p class="text-gray-400 text-sm">Easy on the eyes</p>
+                </div>
+                
+                <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 text-center">
+                    <div class="text-3xl mb-4">📱</div>
+                    <h3 class="font-semibold mb-2">Mobile-first</h3>
+                    <p class="text-gray-400 text-sm">Tailwind + Alpine</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-16 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-5xl font-bold mb-8 gradient-text">Simple. Honest. Pricing.</h2>
+            
+            <div class="bg-gray-900 border border-purple-500 rounded-lg p-12 glow-intense">
+                <div class="text-6xl font-bold text-purple-400 mb-4">$349</div>
+                <div class="text-xl text-gray-300 mb-8">One-time payment. That's it.</div>
+                
+                <ul class="space-y-4 text-left max-w-md mx-auto mb-8">
+                    <li class="flex items-center">
+                        <span class="text-green-400 mr-3">✓</span>
+                        Lifetime license
+                    </li>
+                    <li class="flex items-center">
+                        <span class="text-green-400 mr-3">✓</span>
+                        Unlimited clients
+                    </li>
+                    <li class="flex items-center">
+                        <span class="text-green-400 mr-3">✓</span>
+                        Full source code access
+                    </li>
+                    <li class="flex items-center">
+                        <span class="text-green-400 mr-3">✓</span>
+                        Free updates
+                    </li>
+                    <li class="flex items-center">
+                        <span class="text-green-400 mr-3">✓</span>
+                        Community access
+                    </li>
+                </ul>
+                
+                <a href="#buy" class="bg-purple-600 hover:bg-purple-700 text-white px-12 py-4 rounded-lg font-semibold text-xl transition-all transform hover:scale-105 inline-block">
+                    Buy ghst_ Now
+                </a>
+                
+                <p class="text-gray-400 text-sm mt-6">
+                    Compare: Buffer Pro = $99/month ($1,188/year)<br>
+                    ghst_ pays for itself in 4 months.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="py-16 px-4 sm:px-6 lg:px-8 bg-gray-900/30">
+        <div class="max-w-6xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-8">What Builders Are Saying</h2>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 relative">
+                    <!-- Ghost Reaction: Heart -->
+                    <div class="absolute top-2 right-2 opacity-40">
+                        <div class="ghost-float" style="animation-delay: 0.5s;">
+                            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="#ef4444">
+                                <path d="M12,21.35L10.55,20.03C5.4,15.36 2,12.28 2,8.5 2,5.42 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.09C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.42 22,8.5C22,12.28 18.6,15.36 13.45,20.04L12,21.35Z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-xl font-bold mr-4">
+                            S
+                        </div>
+                        <div>
+                            <div class="font-semibold">Sarah Chen</div>
+                            <div class="text-gray-400 text-sm">Freelance Social Media Manager</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 italic">"Finally, a tool that actually gets it. I'm not running a massive agency - I just need something that works without the monthly anxiety of SaaS bills."</p>
+                </div>
+                
+                <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 relative">
+                    <!-- Ghost Reaction: Thumbs Up -->
+                    <div class="absolute top-2 right-2 opacity-40">
+                        <div class="ghost-float" style="animation-delay: 1s;">
+                            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="#10b981">
+                                <path d="M23,10C23,8.89 22.1,8 21,8H14.68L15.64,3.43C15.66,3.33 15.67,3.22 15.67,3.11C15.67,2.7 15.5,2.32 15.23,2.05L14.17,1L7.59,7.58C7.22,7.95 7,8.45 7,9V19A2,2 0 0,0 9,21H18C18.83,21 19.54,20.5 19.84,19.78L22.86,12.73C22.95,12.5 23,12.26 23,12V10.08L23,10M1,9H5V21H1V9Z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-xl font-bold mr-4">
+                            M
+                        </div>
+                        <div>
+                            <div class="font-semibold">Marcus Rodriguez</div>
+                            <div class="text-gray-400 text-sm">Fitness Coach</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 italic">"The AI strategy engine is incredible. It generated a 12-week launch campaign that would have taken me days to plan. Worth every penny."</p>
+                </div>
+                
+                <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 relative">
+                    <!-- Ghost Reaction: Star -->
+                    <div class="absolute top-2 right-2 opacity-40">
+                        <div class="ghost-float" style="animation-delay: 1.5s;">
+                            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="#f59e0b">
+                                <path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-xl font-bold mr-4">
+                            A
+                        </div>
+                        <div>
+                            <div class="font-semibold">Alex Thompson</div>
+                            <div class="text-gray-400 text-sm">Boutique Agency Owner</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 italic">"Self-hosted means I own my data and my workflow. The white-label features let me brand everything for my clients. This is how software should be sold."</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA Section -->
+    <section class="py-24 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-5xl font-bold mb-8 gradient-text">It's time to stop renting your tools.</h2>
+            
+            <p class="text-xl text-gray-300 mb-12">
+                Join the builders who own their workflow. One payment. Lifetime access. Unlimited potential.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-6 justify-center">
+                <a href="#buy" class="bg-purple-600 hover:bg-purple-700 text-white px-12 py-4 rounded-lg font-semibold text-xl transition-all transform hover:scale-105 glow-intense success-trigger">
+                    Buy ghst_
+                </a>
+                
+                <!-- Success Celebration Ghost (initially hidden) -->
+                <div id="successGhost" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-0 z-50">
+                    <div class="ghost-celebrate">
+                        <svg class="w-24 h-24" viewBox="0 0 792 612">
+                            <path fill="#10b981" d="M513.6,205.6c-.8-.6-1.5-1.2-2-1.5-57.6-38.5-172.4-42.5-225.3,7-37.6,35.2-25.4,75.2-27.1,121.7-2,51.7-17,84.5-27.1,132-4.7,22-3.8,38.8,16.7,49.9,.5.3,1.4.6,2.5,.9,3.7-.8,7.3-2,10.8-3.7,13.7-6.9,23.4-23.6,39.1-25.6,26.1-3.3,34.7,20.6,50.6,35,28.3,25.5,70.1,25.9,98.9,.9,11-9.5,23.1-31.6,36.2-35.2,17.1-4.8,26.8,11.2,40.8,16.9,30.2,12.2,57-17,46.7-46.7-15.6-65.3-27.8-131.6-44-196.7-3.8-15.2-8.9-37.7-16.8-54.8ZM367.3,293.5c-39,9.7-43.7-77.3-7.4-81.2,36-3.9,39.4,73.2,7.4,81.2ZM461.9,294.2c-34.9-.3-35.1-77.7-3.5-82,39.8-5.4,40.4,82.3,3.5,82Z"/>
+                            <path fill="#065f46" d="M359.8,212.2c-36.3,3.9-31.5,90.9,7.4,81.2,32-8,28.5-85.1-7.4-81.2Z"/>
+                            <path fill="#065f46" d="M458.4,212.2c-31.6,4.3-31.4,81.7,3.5,82,36.9,.3,36.4-87.4-3.5-82Z"/>
+                            <!-- Celebration sparkles -->
+                            <circle fill="#fbbf24" cx="300" cy="150" r="3" opacity="0.8">
+                                <animate attributeName="opacity" values="0.8;0;0.8" dur="1s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle fill="#fbbf24" cx="500" cy="180" r="3" opacity="0.8">
+                                <animate attributeName="opacity" values="0;0.8;0" dur="1s" repeatCount="indefinite"/>
+                            </circle>
+                            <circle fill="#fbbf24" cx="320" cy="350" r="3" opacity="0.8">
+                                <animate attributeName="opacity" values="0.8;0;0.8" dur="1.5s" repeatCount="indefinite"/>
+                            </circle>
+                        </svg>
+                    </div>
+                    <div class="text-center mt-4 text-green-400 font-bold text-xl">
+                        Woo! Welcome to the ghst_ family! 👻
+                    </div>
+                </div>
+                <a href="#demo" class="bg-gray-800 hover:bg-gray-700 text-white px-12 py-4 rounded-lg font-semibold text-xl transition-all border border-gray-700">
+                    See Demo
+                </a>
+                <a href="#docs" class="text-purple-400 hover:text-purple-300 px-12 py-4 font-semibold text-xl transition-colors">
+                    Read Docs
+                </a>
+            </div>
+            
+            <div class="mt-16 bg-gray-900 border border-gray-800 rounded-lg p-8">
+                <div class="flex items-center justify-between mb-4">
+                    <p class="text-sm text-gray-500"># Ready to deploy?</p>
+                    <div class="flex space-x-1">
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse" style="animation-delay: 0.2s"></span>
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse" style="animation-delay: 0.4s"></span>
+                    </div>
+                </div>
+                <!-- Installation Steps UI -->
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-4 p-3 bg-black rounded border border-gray-700">
+                        <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">1</div>
+                        <div class="flex-1">
+                            <div class="font-medium">Download ghst_</div>
+                            <div class="text-xs text-gray-500">One-click installer for your server</div>
+                        </div>
+                        <span class="text-green-400">✓</span>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4 p-3 bg-black rounded border border-gray-700">
+                        <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">2</div>
+                        <div class="flex-1">
+                            <div class="font-medium">Enter Your License</div>
+                            <div class="text-xs text-gray-500">Activate with your purchase key</div>
+                        </div>
+                        <span class="text-green-400">✓</span>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4 p-3 bg-black rounded border border-gray-700">
+                        <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">3</div>
+                        <div class="flex-1">
+                            <div class="font-medium">Start Managing Clients</div>
+                            <div class="text-xs text-gray-500">You're ready to go!</div>
+                        </div>
+                        <span class="text-green-400">✓</span>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t border-gray-800 text-center">
+                        <p class="text-sm text-gray-400 mb-2">Installation takes less than 5 minutes</p>
+                        <p class="text-xs text-gray-600">Works on any standard web server • No coding required</p>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-gray-800 text-xs text-gray-600">
+                    <span class="text-green-400">✓ Installation complete</span> • <span class="text-purple-400">Ready for clients</span> • <span class="text-blue-400">Your workflow, owned</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-800 py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <h3 class="text-2xl font-bold">
+                        <span class="text-purple-500">*</span> ghst_
+                    </h3>
+                    <p class="text-gray-400 text-sm">Own your workflow. Never rent it again.</p>
+                </div>
+                
+                <div class="flex space-x-6 text-sm">
+                    <a href="#" class="text-gray-400 hover:text-white">Documentation</a>
+                    <a href="#" class="text-gray-400 hover:text-white">GitHub</a>
+                    <a href="#" class="text-gray-400 hover:text-white">Community</a>
+                    <a href="#" class="text-gray-400 hover:text-white">Support</a>
+                </div>
+            </div>
+            
+            <div class="mt-8 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+                <p>&copy; 2024 ghst_. Built for the modern web.</p>
+                <p>MIT License • Self-hosted • Privacy-first</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- All Interactive JavaScript -->
+    <script>
+        // Alpine.js Components
+        function pricingCalculator() {
+            return {
+                competitor: 'buffer',
+                timeframe: 1,
+                
+                get competitorPrice() {
+                    const prices = {
+                        buffer: 99,
+                        hootsuite: 99,
+                        sprout: 149,
+                        later: 80
+                    };
+                    return prices[this.competitor];
+                },
+                
+                get saasTotal() {
+                    return this.competitorPrice * 12 * this.timeframe;
+                },
+                
+                get savings() {
+                    return this.saasTotal - 349;
+                },
+                
+                get savingsPercentage() {
+                    return Math.round((this.savings / this.saasTotal) * 100);
+                },
+                
+                get paybackMonths() {
+                    return Math.ceil(349 / this.competitorPrice);
+                },
+                
+                formatNumber(num) {
+                    return num.toLocaleString();
+                }
+            }
+        }
+        
+        function featureToggles() {
+            return {
+                features: [
+                    {
+                        id: 'ai-strategy',
+                        name: 'Strategy Engine AI',
+                        description: 'Generate complete 12-week campaigns',
+                        enabled: true,
+                        benefits: ['12-week campaign generation', 'Multiple tone options', 'Platform optimization', 'PDF export']
+                    },
+                    {
+                        id: 'scheduling',
+                        name: 'Cross-Platform Scheduling',
+                        description: 'Schedule to all major platforms',
+                        enabled: true,
+                        benefits: ['Twitter, Instagram, LinkedIn, Facebook', 'Optimal timing suggestions', 'Bulk scheduling', 'Auto-hashtags']
+                    },
+                    {
+                        id: 'analytics',
+                        name: 'Real-Time Analytics',
+                        description: 'Track performance across platforms',
+                        enabled: false,
+                        benefits: ['Live engagement tracking', 'Growth metrics', 'Best time analysis', 'Custom reports']
+                    },
+                    {
+                        id: 'whitelabel',
+                        name: 'White-Label Branding',
+                        description: 'Your brand, your clients',
+                        enabled: false,
+                        benefits: ['Custom logos & colors', 'Branded dashboards', 'Client reports', 'Your domain']
+                    },
+                    {
+                        id: 'unlimited',
+                        name: 'Unlimited Clients',
+                        description: 'No limits on client accounts',
+                        enabled: true,
+                        benefits: ['Add unlimited clients', 'Per-client dashboards', 'Individual branding', 'Separate analytics']
+                    },
+                    {
+                        id: 'selfhosted',
+                        name: 'Self-Hosted Control',
+                        description: 'Your server, your data',
+                        enabled: true,
+                        benefits: ['Full data ownership', 'Custom modifications', 'No monthly fees', 'Source code access']
+                    }
+                ],
+                
+                get enabledCount() {
+                    return this.features.filter(f => f.enabled).length;
+                },
+                
+                toggleFeature(featureId) {
+                    const feature = this.features.find(f => f.id === featureId);
+                    if (feature) {
+                        feature.enabled = !feature.enabled;
+                    }
+                }
+            }
+        }
+        
+        function performanceMetrics() {
+            return {
+                postsScheduled: 0,
+                clientsManaged: 0,
+                moneySaved: 0,
+                strategiesGenerated: 0,
+                
+                init() {
+                    this.animateCounters();
+                },
+                
+                animateCounters() {
+                    this.animateCounter('postsScheduled', 12847, 2000);
+                    this.animateCounter('clientsManaged', 589, 1800);
+                    this.animateCounter('moneySaved', 67943, 2200);
+                    this.animateCounter('strategiesGenerated', 234, 1500);
+                },
+                
+                animateCounter(property, target, duration) {
+                    const start = performance.now();
+                    const animate = (currentTime) => {
+                        const elapsed = currentTime - start;
+                        const progress = Math.min(elapsed / duration, 1);
+                        
+                        this[property] = Math.floor(target * this.easeOutQuart(progress));
+                        
+                        if (progress < 1) {
+                            requestAnimationFrame(animate);
+                        }
+                    };
+                    requestAnimationFrame(animate);
+                },
+                
+                easeOutQuart(t) {
+                    return 1 - Math.pow(1 - t, 4);
+                },
+                
+                formatMetric(num) {
+                    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+                    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+                    return num.toString();
+                }
+            }
+        }
+        
+        function testimonialCarousel() {
+            return {
+                currentSlide: 0,
+                isPaused: false,
+                interval: null,
+                testimonials: [
+                    {
+                        name: "Sarah Chen",
+                        role: "Freelance Social Media Manager",
+                        initial: "S",
+                        color: "#8b5cf6",
+                        quote: "Finally, a tool that actually gets it. I'm not running a massive agency - I just need something that works without the monthly anxiety of SaaS bills."
+                    },
+                    {
+                        name: "Marcus Rodriguez",
+                        role: "Fitness Coach",
+                        initial: "M",
+                        color: "#10b981",
+                        quote: "The AI strategy engine is incredible. It generated a 12-week launch campaign that would have taken me days to plan. Worth every penny."
+                    },
+                    {
+                        name: "Alex Thompson",
+                        role: "Boutique Agency Owner",
+                        initial: "A",
+                        color: "#3b82f6",
+                        quote: "Self-hosted means I own my data and my workflow. The white-label features let me brand everything for my clients. This is how software should be sold."
+                    },
+                    {
+                        name: "Jennifer Liu",
+                        role: "Business Coach",
+                        initial: "J",
+                        color: "#f59e0b",
+                        quote: "I was spending $150/month on multiple tools. ghst_ replaced them all and paid for itself in 3 months. Now I actually own my workflow."
+                    },
+                    {
+                        name: "David Park",
+                        role: "Content Creator",
+                        initial: "D",
+                        color: "#ef4444",
+                        quote: "The code examples aren't just marketing - this thing actually works exactly as advertised. Self-hosting was easier than setting up WordPress."
+                    }
+                ],
+                
+                init() {
+                    this.startCarousel();
+                },
+                
+                startCarousel() {
+                    this.interval = setInterval(() => {
+                        if (!this.isPaused) {
+                            this.nextSlide();
+                        }
+                    }, 4000);
+                },
+                
+                nextSlide() {
+                    this.currentSlide = (this.currentSlide + 1) % this.testimonials.length;
+                },
+                
+                prevSlide() {
+                    this.currentSlide = this.currentSlide === 0 ? this.testimonials.length - 1 : this.currentSlide - 1;
+                },
+                
+                goToSlide(index) {
+                    this.currentSlide = index;
+                },
+                
+                pauseCarousel() {
+                    this.isPaused = true;
+                },
+                
+                resumeCarousel() {
+                    this.isPaused = false;
+                }
+            }
+        }
+        
+        // Dynamic Code Examples Rotation
+        let currentExample = 0;
+        const examples = ['install', 'api', 'ai', 'analytics'];
+        
+        function rotateCodeExamples() {
+            const currentEl = document.querySelector('.code-example.active');
+            const allExamples = document.querySelectorAll('.code-example');
+            
+            // Fade out current
+            currentEl.classList.add('fade-out');
+            
+            setTimeout(() => {
+                currentEl.classList.remove('active', 'fade-out');
+                
+                // Move to next example
+                currentExample = (currentExample + 1) % examples.length;
+                const nextEl = document.querySelector(`[data-example="${examples[currentExample]}"]`);
+                
+                nextEl.classList.add('active', 'fade-in');
+                
+                setTimeout(() => {
+                    nextEl.classList.remove('fade-in');
+                }, 500);
+            }, 250);
+        }
+        
+        // Start code rotation
+        setInterval(rotateCodeExamples, 5000);
+        
+        // Copy to clipboard functionality
+        function copyCode(button) {
+            const codeBlock = button.parentElement.querySelector('code');
+            const text = codeBlock.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                button.classList.add('copied');
+                button.innerHTML = `
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                `;
+                
+                setTimeout(() => {
+                    button.classList.remove('copied');
+                    button.innerHTML = `
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                        </svg>
+                    `;
+                }, 2000);
+            });
+        }
+        
+        // Modal Functions
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            
+            // Animate in
+            setTimeout(() => {
+                modal.querySelector('.modal-content').style.transform = 'scale(1)';
+                modal.querySelector('.modal-content').style.opacity = '1';
+            }, 10);
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            
+            // Animate out
+            modal.querySelector('.modal-content').style.transform = 'scale(0.9)';
+            modal.querySelector('.modal-content').style.opacity = '0';
+            
+            setTimeout(() => {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }, 200);
+        }
+        
+        // Demo form submission
+        function submitDemoRequest(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            // Simulate form submission
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            
+            submitBtn.textContent = 'Sending...';
+            submitBtn.disabled = true;
+            
+            setTimeout(() => {
+                submitBtn.textContent = '✓ Demo Access Sent!';
+                submitBtn.classList.remove('bg-purple-600', 'hover:bg-purple-700');
+                submitBtn.classList.add('bg-green-600');
+                
+                setTimeout(() => {
+                    closeModal('demoModal');
+                    
+                    // Reset form
+                    setTimeout(() => {
+                        form.reset();
+                        submitBtn.textContent = originalText;
+                        submitBtn.disabled = false;
+                        submitBtn.classList.remove('bg-green-600');
+                        submitBtn.classList.add('bg-purple-600', 'hover:bg-purple-700');
+                    }, 1000);
+                }, 2000);
+            }, 1500);
+        }
+        
+        // Sticky Navigation and Progress Bar
+        function updateScrollProgress() {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            
+            document.getElementById('progressBar').style.width = scrolled + '%';
+            
+            // Show/hide sticky nav
+            const stickyNav = document.getElementById('stickyNav');
+            if (winScroll > 100) {
+                stickyNav.classList.add('visible');
+            } else {
+                stickyNav.classList.remove('visible');
+            }
+        }
+        
+        // Smooth scroll with section highlighting
+        function updateActiveNavLink() {
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            let currentSection = '';
+            
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                if (rect.top <= 100 && rect.bottom >= 100) {
+                    currentSection = section.id;
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('text-purple-400');
+                link.classList.add('text-gray-300');
+                
+                if (link.getAttribute('href') === `#${currentSection}`) {
+                    link.classList.remove('text-gray-300');
+                    link.classList.add('text-purple-400');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', () => {
+            updateScrollProgress();
+            updateActiveNavLink();
+            updateGhostProgress();
+            
+            // Existing parallax code
+            if (!ticking) {
+                requestAnimationFrame(updateParallax);
+                ticking = true;
+            }
+        });
+        
+        // Close modals on outside click
+        window.addEventListener('click', (event) => {
+            if (event.target.classList.contains('modal')) {
+                const modalId = event.target.id;
+                closeModal(modalId);
+            }
+        });
+        
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Enhanced scroll animations with stagger effects
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('slide-up');
+                    
+                    // Add stagger animation to child elements
+                    const staggerItems = entry.target.querySelectorAll('.stagger-item');
+                    staggerItems.forEach((item, index) => {
+                        setTimeout(() => {
+                            item.style.opacity = '1';
+                            item.style.transform = 'translateY(0)';
+                        }, index * 100);
+                    });
+                }
+            });
+        }, observerOptions);
+
+        // Observe sections and stagger items
+        document.querySelectorAll('section').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Parallax effects on scroll
+        let ticking = false;
+        function updateParallax() {
+            const scrolled = window.pageYOffset;
+            const parallaxElements = document.querySelectorAll('.parallax');
+            
+            parallaxElements.forEach(element => {
+                const speed = element.dataset.speed || 0.5;
+                const yPos = -(scrolled * speed);
+                element.style.transform = `translateY(${yPos}px)`;
+            });
+            
+            ticking = false;
+        }
+
+        // Add hover glow intensity effects
+        document.querySelectorAll('.glow-intense').forEach(element => {
+            element.addEventListener('mouseenter', function() {
+                this.style.boxShadow = `
+                    0 0 40px rgba(139, 92, 246, 0.8),
+                    0 0 80px rgba(139, 92, 246, 0.4),
+                    0 10px 40px rgba(0, 0, 0, 0.5)
+                `;
+            });
+            
+            element.addEventListener('mouseleave', function() {
+                this.style.boxShadow = `
+                    0 0 20px rgba(139, 92, 246, 0.4),
+                    0 0 40px rgba(139, 92, 246, 0.2),
+                    0 4px 20px rgba(0, 0, 0, 0.3)
+                `;
+            });
+        });
+
+        // Ghost interactions
+        function initGhostInteractions() {
+            // Easter egg ghost on hover
+            const hackerBabyTrigger = document.querySelector('.hacker-baby-trigger');
+            const hackerGhost = document.getElementById('hackerGhost');
+            
+            if (hackerBabyTrigger && hackerGhost) {
+                hackerBabyTrigger.addEventListener('mouseenter', () => {
+                    hackerGhost.classList.add('show');
+                });
+                
+                hackerBabyTrigger.addEventListener('mouseleave', () => {
+                    hackerGhost.classList.remove('show');
+                });
+            }
+            
+            // Success celebration ghost
+            const successTrigger = document.querySelector('.success-trigger');
+            const successGhost = document.getElementById('successGhost');
+            
+            if (successTrigger && successGhost) {
+                successTrigger.addEventListener('click', (e) => {
+                    // Only trigger if it's a real click, not just navigation
+                    if (e.target.href && !e.target.href.includes('#buy')) {
+                        return;
+                    }
+                    
+                    successGhost.style.opacity = '1';
+                    successGhost.querySelector('.ghost-celebrate').style.animation = 'ghostCelebrate 1.2s ease-in-out';
+                    
+                    setTimeout(() => {
+                        successGhost.style.opacity = '0';
+                    }, 3000);
+                });
+            }
+        }
+        
+        // Ghost progress indicator
+        function updateGhostProgress() {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            const ghostProgress = document.getElementById('ghostProgress');
+            
+            if (scrolled > 10 && scrolled < 90) {
+                ghostProgress.classList.add('visible');
+            } else {
+                ghostProgress.classList.remove('visible');
+            }
+        }
+        
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            initGhostInteractions();
+            // Enhanced modal styling
+            const modalContents = document.querySelectorAll('.modal-content');
+            modalContents.forEach(content => {
+                content.style.transform = 'scale(0.9)';
+                content.style.opacity = '0';
+                content.style.transition = 'all 0.2s ease';
+            });
+            
+            // Add initial styles to stagger items
+            document.querySelectorAll('.stagger-item').forEach(item => {
+                item.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+            });
+
+            // Add ripple effect to buttons
+            document.querySelectorAll('.btn-primary').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const ripple = document.createElement('span');
+                    const rect = button.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+                    
+                    ripple.style.cssText = `
+                        position: absolute;
+                        width: ${size}px;
+                        height: ${size}px;
+                        left: ${x}px;
+                        top: ${y}px;
+                        background: rgba(255, 255, 255, 0.3);
+                        border-radius: 50%;
+                        transform: scale(0);
+                        animation: ripple 0.6s ease-out;
+                        pointer-events: none;
+                    `;
+                    
+                    button.style.position = 'relative';
+                    button.style.overflow = 'hidden';
+                    button.appendChild(ripple);
+                    
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600);
+                });
+            });
+
+            // Add CSS for ripple animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes ripple {
+                    to {
+                        transform: scale(2);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+
+        // Performance optimization: Debounced resize handler
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(function() {
+                // Recalculate animations if needed
+                updateParallax();
+            }, 150);
+        });
+    </script>
+</body>
+</html>
