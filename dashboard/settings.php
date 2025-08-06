@@ -129,6 +129,70 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 break;
                 
+            case 'update_oauth_settings':
+                $oauthSettings = [
+                    'oauth_fb_app_id' => $_POST['fb_app_id'] ?? '',
+                    'oauth_fb_app_secret' => $_POST['fb_app_secret'] ?? '',
+                    'oauth_linkedin_client_id' => $_POST['linkedin_client_id'] ?? '',
+                    'oauth_linkedin_client_secret' => $_POST['linkedin_client_secret'] ?? '',
+                    'oauth_twitter_api_key' => $_POST['twitter_api_key'] ?? '',
+                    'oauth_twitter_api_secret' => $_POST['twitter_api_secret'] ?? '',
+                    'oauth_twitter_bearer_token' => $_POST['twitter_bearer_token'] ?? ''
+                ];
+                
+                $db->beginTransaction();
+                try {
+                    // Determine if saving to client or user settings
+                    if ($client) {
+                        // Save to client_settings table
+                        foreach ($oauthSettings as $key => $value) {
+                            // Only update if not empty or if explicitly clearing
+                            if (!empty($value) || isset($_POST[str_replace('oauth_', '', $key)])) {
+                                // Encrypt secrets before storing
+                                if (strpos($key, 'secret') !== false || strpos($key, 'token') !== false) {
+                                    if (!empty($value) && !str_contains($value, '*')) {
+                                        $value = base64_encode($value); // Basic encoding, use better encryption in production
+                                    }
+                                }
+                                
+                                $stmt = $db->prepare("
+                                    INSERT INTO client_settings (client_id, setting_key, setting_value) 
+                                    VALUES (?, ?, ?)
+                                    ON DUPLICATE KEY UPDATE setting_value = ?, updated_at = NOW()
+                                ");
+                                $stmt->execute([$client['id'], $key, $value, $value]);
+                            }
+                        }
+                    } else {
+                        // Save to user settings table
+                        foreach ($oauthSettings as $key => $value) {
+                            // Only update if not empty or if explicitly clearing
+                            if (!empty($value) || isset($_POST[str_replace('oauth_', '', $key)])) {
+                                // Encrypt secrets before storing
+                                if (strpos($key, 'secret') !== false || strpos($key, 'token') !== false) {
+                                    if (!empty($value) && !str_contains($value, '*')) {
+                                        $value = base64_encode($value); // Basic encoding, use better encryption in production
+                                    }
+                                }
+                                
+                                $stmt = $db->prepare("
+                                    INSERT INTO settings (user_id, setting_key, setting_value) 
+                                    VALUES (?, ?, ?)
+                                    ON DUPLICATE KEY UPDATE setting_value = ?, updated_at = NOW()
+                                ");
+                                $stmt->execute([$user['id'], $key, $value, $value]);
+                            }
+                        }
+                    }
+                    
+                    $db->commit();
+                    $message = 'OAuth settings updated successfully.';
+                } catch (Exception $e) {
+                    $db->rollBack();
+                    $error = 'Failed to update OAuth settings: ' . $e->getMessage();
+                }
+                break;
+                
             case 'update_email_settings':
                 $emailSettings = [
                     'email_provider' => $_POST['email_provider'] ?? 'smtp',
@@ -325,6 +389,52 @@ try {
     error_log('Failed to load AI settings: ' . $e->getMessage());
 }
 
+// Get current OAuth settings (client-level if client selected, otherwise user-level)
+$oauthSettings = [];
+try {
+    if ($client) {
+        // Load client-level OAuth settings
+        $stmt = $db->prepare("
+            SELECT setting_key, setting_value 
+            FROM client_settings 
+            WHERE client_id = ? AND setting_key LIKE 'oauth_%'
+        ");
+        $stmt->execute([$client['id']]);
+    } else {
+        // Load user-level OAuth settings
+        $stmt = $db->prepare("
+            SELECT setting_key, setting_value 
+            FROM settings 
+            WHERE user_id = ? AND setting_key LIKE 'oauth_%'
+        ");
+        $stmt->execute([$user['id']]);
+    }
+    
+    $settings = $stmt->fetchAll();
+    
+    foreach ($settings as $setting) {
+        $oauthSettings[$setting['setting_key']] = $setting['setting_value'];
+    }
+    
+    // Set defaults if not found
+    $oauthDefaults = [
+        'oauth_fb_app_id' => '',
+        'oauth_fb_app_secret' => '',
+        'oauth_linkedin_client_id' => '',
+        'oauth_linkedin_client_secret' => '',
+        'oauth_twitter_api_key' => '',
+        'oauth_twitter_api_secret' => ''
+    ];
+    
+    foreach ($oauthDefaults as $key => $default) {
+        if (!isset($oauthSettings[$key])) {
+            $oauthSettings[$key] = $default;
+        }
+    }
+} catch (Exception $e) {
+    error_log('Failed to load OAuth settings: ' . $e->getMessage());
+}
+
 renderHeader('Settings');
 ?>
 
@@ -368,10 +478,12 @@ renderHeader('Settings');
             <button onclick="showTab('client')" id="tab-client" class="py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-400 hover:text-gray-300 hover:border-gray-300">
                 Client
             </button>
+            <button onclick="showTab('oauth')" id="tab-oauth" class="py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-400 hover:text-gray-300 hover:border-gray-300">
+                OAuth APIs
+            </button>
             <button onclick="showTab('branding')" id="tab-branding" class="py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-400 hover:text-gray-300 hover:border-gray-300">
                 Branding
             </button>
-            
             <button onclick="showTab('email')" id="tab-email" class="py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-400 hover:text-gray-300 hover:border-gray-300">
                 Email Settings
             </button>
@@ -1062,6 +1174,162 @@ renderHeader('Settings');
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+    
+    <!-- OAuth Tab -->
+    <div id="content-oauth" class="space-y-8 hidden">
+        <div class="bg-gray-900 rounded-lg border border-gray-800 p-6">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-200">OAuth API Configuration</h3>
+                    <p class="text-sm text-gray-400 mt-1">Configure social media platform API credentials for connecting accounts</p>
+                </div>
+            </div>
+            
+            <form method="POST" class="space-y-6">
+                <input type="hidden" name="csrf_token" value="<?= $auth->generateCSRFToken() ?>">
+                <input type="hidden" name="action" value="update_oauth_settings">
+                
+                <!-- Facebook/Instagram -->
+                <div class="space-y-4 p-4 bg-gray-800 rounded-lg">
+                    <h4 class="font-medium text-purple-400">Facebook/Instagram</h4>
+                    <p class="text-xs text-gray-500 mb-3">Get these from <a href="https://developers.facebook.com" target="_blank" class="text-blue-400 hover:text-blue-300">developers.facebook.com</a></p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">App ID</label>
+                            <input 
+                                type="text" 
+                                name="fb_app_id" 
+                                value="<?= sanitize($oauthSettings['oauth_fb_app_id'] ?? '') ?>"
+                                placeholder="Your Facebook App ID"
+                                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            >
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">App Secret</label>
+                            <input 
+                                type="password" 
+                                name="fb_app_secret" 
+                                value="<?= sanitize($oauthSettings['oauth_fb_app_secret'] ?? '') ?>"
+                                placeholder="Your Facebook App Secret"
+                                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            >
+                        </div>
+                    </div>
+                    
+                    <div class="mt-2">
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Redirect URL</label>
+                        <div class="px-3 py-2 bg-gray-900 border border-gray-700 rounded text-xs font-mono text-gray-400">
+                            <?= APP_URL ?>/api/oauth/callback/facebook.php
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- LinkedIn -->
+                <div class="space-y-4 p-4 bg-gray-800 rounded-lg">
+                    <h4 class="font-medium text-purple-400">LinkedIn</h4>
+                    <p class="text-xs text-gray-500 mb-3">Get these from <a href="https://www.linkedin.com/developers" target="_blank" class="text-blue-400 hover:text-blue-300">linkedin.com/developers</a></p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Client ID</label>
+                            <input 
+                                type="text" 
+                                name="linkedin_client_id" 
+                                value="<?= sanitize($oauthSettings['oauth_linkedin_client_id'] ?? '') ?>"
+                                placeholder="Your LinkedIn Client ID"
+                                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            >
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Client Secret</label>
+                            <input 
+                                type="password" 
+                                name="linkedin_client_secret" 
+                                value="<?= sanitize($oauthSettings['oauth_linkedin_client_secret'] ?? '') ?>"
+                                placeholder="Your LinkedIn Client Secret"
+                                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            >
+                        </div>
+                    </div>
+                    
+                    <div class="mt-2">
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Redirect URL</label>
+                        <div class="px-3 py-2 bg-gray-900 border border-gray-700 rounded text-xs font-mono text-gray-400">
+                            <?= APP_URL ?>/api/oauth/callback/linkedin.php
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Twitter/X -->
+                <div class="space-y-4 p-4 bg-gray-800 rounded-lg">
+                    <h4 class="font-medium text-purple-400">Twitter/X</h4>
+                    <p class="text-xs text-gray-500 mb-3">Get these from <a href="https://developer.twitter.com" target="_blank" class="text-blue-400 hover:text-blue-300">developer.twitter.com</a></p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">API Key</label>
+                            <input 
+                                type="text" 
+                                name="twitter_api_key" 
+                                value="<?= sanitize($oauthSettings['oauth_twitter_api_key'] ?? '') ?>"
+                                placeholder="Your Twitter API Key"
+                                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            >
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-2">API Secret</label>
+                            <input 
+                                type="password" 
+                                name="twitter_api_secret" 
+                                value="<?= sanitize($oauthSettings['oauth_twitter_api_secret'] ?? '') ?>"
+                                placeholder="Your Twitter API Secret"
+                                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            >
+                        </div>
+                    </div>
+                    
+                    <div class="mt-2">
+                        <label class="block text-sm font-medium text-gray-300 mb-1">Redirect URL</label>
+                        <div class="px-3 py-2 bg-gray-900 border border-gray-700 rounded text-xs font-mono text-gray-400">
+                            <?= APP_URL ?>/api/oauth/callback/twitter.php
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Info Box -->
+                <div class="bg-blue-900/20 border border-blue-700 rounded-lg p-4">
+                    <div class="flex items-start space-x-3">
+                        <svg class="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <h4 class="text-blue-300 font-medium text-sm mb-1">OAuth Setup Instructions</h4>
+                            <ol class="text-blue-200 text-xs space-y-1">
+                                <li>1. Register your app with each platform you want to support</li>
+                                <li>2. Add the redirect URLs shown above to your app settings</li>
+                                <li>3. Enter your API credentials here and save</li>
+                                <li>4. Users can then connect their accounts from the Accounts page</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Save Button -->
+                <div class="flex justify-end">
+                    <button type="submit" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg text-white font-medium transition-colors flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>Save OAuth Settings</span>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
     <?php endif; ?>

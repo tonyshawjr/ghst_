@@ -13,7 +13,7 @@
             <input 
                 type="text" 
                 name="db_host" 
-                value="<?= $_POST['db_host'] ?? 'localhost' ?>"
+                value="<?= $_POST['db_host'] ?? '' ?>"
                 placeholder="localhost or 127.0.0.1"
                 class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 required
@@ -26,7 +26,7 @@
             <input 
                 type="number" 
                 name="db_port" 
-                value="<?= $_POST['db_port'] ?? '3306' ?>"
+                value="<?= $_POST['db_port'] ?? '' ?>"
                 placeholder="3306"
                 class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 required
@@ -40,7 +40,7 @@
         <input 
             type="text" 
             name="db_name" 
-            value="<?= $_POST['db_name'] ?? 'ghst' ?>"
+            value="<?= $_POST['db_name'] ?? '' ?>"
             placeholder="ghst"
             class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             required
@@ -54,7 +54,7 @@
             <input 
                 type="text" 
                 name="db_user" 
-                value="<?= $_POST['db_user'] ?? 'root' ?>"
+                value="<?= $_POST['db_user'] ?? '' ?>"
                 placeholder="root"
                 class="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-200 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 required

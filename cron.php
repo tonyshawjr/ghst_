@@ -110,6 +110,17 @@ try {
     // Process retry queue
     processRetryQueue();
     
+    // Collect analytics data
+    try {
+        require_once 'includes/AnalyticsCollector.php';
+        $analyticsCollector = new AnalyticsCollector();
+        $analyticsResult = $analyticsCollector->collectAnalytics();
+        logCron('info', "Analytics collection: {$analyticsResult['collected']} collected, {$analyticsResult['failed']} failed");
+    } catch (Exception $e) {
+        logCron('warning', 'Analytics collection failed: ' . $e->getMessage());
+        // Don't stop cron for analytics failures
+    }
+    
 } catch (Exception $e) {
     logCron('error', 'Cron job failed: ' . $e->getMessage());
     die('Cron job failed: ' . $e->getMessage());
