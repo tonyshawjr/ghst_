@@ -45,23 +45,6 @@ CREATE TABLE `settings` (
 
 -- --------------------------------------------------------
 
--- Table structure for `client_settings` (Client-level settings for OAuth, etc.)
-CREATE TABLE `client_settings` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `client_id` int(11) NOT NULL,
-  `setting_key` varchar(100) NOT NULL,
-  `setting_value` text,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_client_setting` (`client_id`, `setting_key`),
-  KEY `client_id` (`client_id`),
-  KEY `setting_key` (`setting_key`),
-  CONSTRAINT `fk_client_settings_client` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
 -- Table structure for `clients`
 CREATE TABLE `clients` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -77,6 +60,23 @@ CREATE TABLE `clients` (
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `is_active` (`is_active`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+-- Table structure for `client_settings` (Client-level settings for OAuth, etc.)
+CREATE TABLE `client_settings` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `client_id` int(11) NOT NULL,
+  `setting_key` varchar(100) NOT NULL,
+  `setting_value` text,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_client_setting` (`client_id`, `setting_key`),
+  KEY `client_id` (`client_id`),
+  KEY `setting_key` (`setting_key`),
+  CONSTRAINT `fk_client_settings_client` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -997,7 +997,7 @@ CREATE INDEX idx_email_logs_report ON report_email_logs(report_id, status);
 
 -- Email indexes
 CREATE INDEX idx_email_queue_status ON email_queue(status, priority, created_at);
-CREATE INDEX idx_email_tracking_token ON email_tracking(tracking_token);
+CREATE INDEX idx_email_tracking_token ON email_tracking(tracking_id);
 
 -- --------------------------------------------------------
 

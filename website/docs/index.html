@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - ghst_</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+    
+    <div class="docs-container">
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="../index.html" class="logo">
+                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 10L80 25L80 75L50 90L20 75L20 25L50 10Z" stroke="#2563eb" stroke-width="3" fill="none"/>
+                        <circle cx="50" cy="50" r="8" fill="#2563eb"/>
+                    </svg>
+                    <span class="logo-text">ghst_</span>
+                </a>
+            </div>
+            
+            <div class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-title">Getting Started</div>
+                    <ul class="nav-links">
+                        <li><a href="#" class="active">Introduction</a></li>
+                        <li><a href="installation.html">Installation</a></li>
+                        <li><a href="quick-start.html">Quick Start</a></li>
+                    </ul>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-title">OAuth Setup</div>
+                    <ul class="nav-links">
+                        <li><a href="oauth/facebook.html">Facebook & Instagram</a></li>
+                        <li><a href="oauth/linkedin.html">LinkedIn</a></li>
+                        <li><a href="oauth/twitter.html">Twitter / X</a></li>
+                        <li><a href="oauth/troubleshooting.html">Troubleshooting</a></li>
+                    </ul>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-title">Features</div>
+                    <ul class="nav-links">
+                        <li><a href="features/scheduling.html">Post Scheduling</a></li>
+                        <li><a href="features/analytics.html">Analytics</a></li>
+                        <li><a href="features/ai-campaigns.html">AI Campaigns (ghst_wrtr)</a></li>
+                        <li><a href="features/multi-client.html">Multi-Client Management</a></li>
+                    </ul>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-title">Configuration</div>
+                    <ul class="nav-links">
+                        <li><a href="config/email.html">Email Settings</a></li>
+                        <li><a href="config/ai-settings.html">AI Configuration</a></li>
+                        <li><a href="config/branding.html">White Label Branding</a></li>
+                        <li><a href="config/security.html">Security</a></li>
+                    </ul>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-title">API Reference</div>
+                    <ul class="nav-links">
+                        <li><a href="api/authentication.html">Authentication</a></li>
+                        <li><a href="api/posts.html">Posts API</a></li>
+                        <li><a href="api/analytics.html">Analytics API</a></li>
+                        <li><a href="api/webhooks.html">Webhooks</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        
+        <main class="main-content">
+            <header class="content-header">
+                <nav class="breadcrumb">
+                    <a href="../index.html">ghst_</a>
+                    <span>/</span>
+                    <span>Documentation</span>
+                </nav>
+            </header>
+            
+            <div class="content-area">
+                <h1>ghst_ Documentation</h1>
+                <p class="lead">
+                    Welcome to the complete documentation for ghst_, the self-hosted social media management platform. 
+                    Get started quickly with our setup guides or dive deep into advanced features.
+                </p>
+                
+                <div class="alert alert-info">
+                    <strong>New to ghst_?</strong> Start with our <a href="installation.html">Installation Guide</a> 
+                    and then follow the <a href="quick-start.html">Quick Start Tutorial</a>.
+                </div>
+                
+                <h2>Quick Navigation</h2>
+                
+                <div class="card-grid">
+                    <div class="card">
+                        <h3>🚀 Getting Started</h3>
+                        <p>Install ghst_ and get your first social media accounts connected in minutes.</p>
+                        <a href="installation.html" class="btn">Installation Guide</a>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>🔑 OAuth Setup</h3>
+                        <p>Complete setup instructions for Facebook, Instagram, LinkedIn, and Twitter integrations.</p>
+                        <a href="oauth/facebook.html" class="btn">OAuth Setup</a>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>🤖 AI Campaigns</h3>
+                        <p>Learn how to use ghst_wrtr, our AI-powered campaign strategy engine.</p>
+                        <a href="features/ai-campaigns.html" class="btn">AI Features</a>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>📊 Analytics</h3>
+                        <p>Track performance, generate reports, and understand your social media ROI.</p>
+                        <a href="features/analytics.html" class="btn">Analytics Guide</a>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>👥 Multi-Client</h3>
+                        <p>Manage multiple clients with separate dashboards and branding.</p>
+                        <a href="features/multi-client.html" class="btn">Client Management</a>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>🛠️ API Reference</h3>
+                        <p>Integrate ghst_ with your existing tools using our REST API.</p>
+                        <a href="api/authentication.html" class="btn">API Docs</a>
+                    </div>
+                </div>
+                
+                <h2>What's Included</h2>
+                
+                <ul>
+                    <li><strong>Social Media Scheduling:</strong> Post to Facebook, Instagram, LinkedIn, and Twitter</li>
+                    <li><strong>AI Campaign Builder:</strong> ghst_wrtr creates complete social media strategies</li>
+                    <li><strong>Analytics Dashboard:</strong> Track engagement, reach, and performance metrics</li>
+                    <li><strong>Multi-Client Management:</strong> Separate workspaces for each client</li>
+                    <li><strong>PDF Report Generation:</strong> Professional client deliverables</li>
+                    <li><strong>Email System:</strong> Automated report delivery</li>
+                    <li><strong>White Label Ready:</strong> Add your own branding</li>
+                    <li><strong>Self-Hosted:</strong> Full control over your data and infrastructure</li>
+                </ul>
+                
+                <h2>System Requirements</h2>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Component</th>
+                            <th>Minimum</th>
+                            <th>Recommended</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>PHP</td>
+                            <td>8.0+</td>
+                            <td>8.1+</td>
+                        </tr>
+                        <tr>
+                            <td>MySQL</td>
+                            <td>5.7+</td>
+                            <td>8.0+</td>
+                        </tr>
+                        <tr>
+                            <td>Storage</td>
+                            <td>100MB</td>
+                            <td>1GB+</td>
+                        </tr>
+                        <tr>
+                            <td>Memory</td>
+                            <td>128MB</td>
+                            <td>256MB+</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="alert alert-success">
+                    <strong>cPanel Compatible:</strong> ghst_ works perfectly on shared hosting with cPanel, 
+                    making it easy to deploy on most hosting providers.
+                </div>
+                
+                <h2>Support</h2>
+                
+                <p>Need help? Here are your options:</p>
+                
+                <ul>
+                    <li>Check our <a href="oauth/troubleshooting.html">Troubleshooting Guide</a> for common issues</li>
+                    <li>Browse the complete documentation using the sidebar navigation</li>
+                    <li>Review the <a href="api/authentication.html">API Reference</a> for integration questions</li>
+                </ul>
+                
+                <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                    <p style="color: var(--text-muted); text-align: center;">
+                        <strong>ghst_</strong> • Self-hosted social media management • 
+                        <a href="../index.html" style="color: var(--primary-color);">Back to Home</a>
+                    </p>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="docs.js"></script>
+</body>
+</html>

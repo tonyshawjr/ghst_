@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook & Instagram OAuth Setup - ghst_ Documentation</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+    
+    <div class="docs-container">
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="../../index.html" class="logo">
+                    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 10L80 25L80 75L50 90L20 75L20 25L50 10Z" stroke="#2563eb" stroke-width="3" fill="none"/>
+                        <circle cx="50" cy="50" r="8" fill="#2563eb"/>
+                    </svg>
+                    <span class="logo-text">ghst_</span>
+                </a>
+            </div>
+            
+            <div class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-title">Getting Started</div>
+                    <ul class="nav-links">
+                        <li><a href="../index.html">Introduction</a></li>
+                        <li><a href="../installation.html">Installation</a></li>
+                        <li><a href="../quick-start.html">Quick Start</a></li>
+                    </ul>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-title">OAuth Setup</div>
+                    <ul class="nav-links">
+                        <li><a href="#" class="active">Facebook & Instagram</a></li>
+                        <li><a href="linkedin.html">LinkedIn</a></li>
+                        <li><a href="twitter.html">Twitter / X</a></li>
+                        <li><a href="troubleshooting.html">Troubleshooting</a></li>
+                    </ul>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-title">Features</div>
+                    <ul class="nav-links">
+                        <li><a href="../features/scheduling.html">Post Scheduling</a></li>
+                        <li><a href="../features/analytics.html">Analytics</a></li>
+                        <li><a href="../features/ai-campaigns.html">AI Campaigns</a></li>
+                        <li><a href="../features/multi-client.html">Multi-Client Management</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        
+        <main class="main-content">
+            <header class="content-header">
+                <nav class="breadcrumb">
+                    <a href="../../index.html">ghst_</a>
+                    <span>/</span>
+                    <a href="../index.html">Documentation</a>
+                    <span>/</span>
+                    <span>Facebook & Instagram OAuth</span>
+                </nav>
+            </header>
+            
+            <div class="content-area">
+                <h1>Facebook & Instagram OAuth Setup</h1>
+                <p class="lead">
+                    Set up Facebook App for posting to Facebook Pages and Instagram Business accounts. 
+                    This guide walks you through the complete process step-by-step.
+                </p>
+                
+                <div class="alert alert-info">
+                    <strong>Before you start:</strong> You'll need a Facebook account and access to the Facebook pages 
+                    you want to manage. For Instagram, you'll need Instagram Business accounts connected to Facebook Pages.
+                </div>
+                
+                <h2>Step 1: Create Facebook App</h2>
+                
+                <ol>
+                    <li>Go to <a href="https://developers.facebook.com/" target="_blank">developers.facebook.com</a></li>
+                    <li>Click <strong>"Create App"</strong></li>
+                    <li>Select <strong>"Business"</strong> as your app type</li>
+                    <li>Enter your app details:
+                        <ul>
+                            <li><strong>App name:</strong> Your company name + "Social Manager" (e.g., "Acme Social Manager")</li>
+                            <li><strong>App contact email:</strong> Your business email</li>
+                        </ul>
+                    </li>
+                </ol>
+                
+                <h2>Step 2: Configure Use Cases</h2>
+                
+                <p>When prompted to add use cases, select these essential options:</p>
+                
+                <div class="alert alert-success">
+                    <strong>✅ Required Selections:</strong>
+                    <ul style="margin: 0.5rem 0;">
+                        <li><strong>Authenticate and request data from users with Facebook Login</strong></li>
+                        <li><strong>Manage everything on your Page</strong></li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-info">
+                    <strong>Optional but Recommended:</strong>
+                    <ul style="margin: 0.5rem 0;">
+                        <li>Create & manage app ads with Meta Ads Manager (for running ads)</li>
+                        <li>Access the Threads API (for Threads integration)</li>
+                        <li>Embed Facebook, Instagram and Threads content (for displaying content)</li>
+                    </ul>
+                </div>
+                
+                <h2>Step 3: Business Portfolio (Optional)</h2>
+                
+                <p>When asked about connecting a business portfolio:</p>
+                <ul>
+                    <li>Select <strong>"I don't want to connect a business portfolio yet"</strong> if you're just getting started</li>
+                    <li>You can always add this later when you're ready for production</li>
+                </ul>
+                
+                <h2>Step 4: App Review Requirements</h2>
+                
+                <p>The system will show publishing requirements:</p>
+                <ul>
+                    <li><strong>Business verification:</strong> Required for live access to Facebook Pages</li>
+                    <li><strong>App Review:</strong> Required for production use</li>
+                </ul>
+                
+                <div class="alert alert-warning">
+                    <strong>Development vs Production:</strong> During development, you can test with your own Facebook pages 
+                    without completing business verification. Complete these steps when you're ready to go live.
+                </div>
+                
+                <h2>Step 5: Get Your Credentials</h2>
+                
+                <p>After creating your app, you'll need to gather your credentials:</p>
+                
+                <h3>App ID</h3>
+                <ol>
+                    <li>From your App Dashboard, the <strong>App ID</strong> is displayed prominently</li>
+                    <li>Copy this number - you'll need it in ghst_</li>
+                </ol>
+                
+                <h3>App Secret</h3>
+                <ol>
+                    <li>Go to <strong>Settings → Basic</strong> in your app dashboard</li>
+                    <li>Find the <strong>"App Secret"</strong> field</li>
+                    <li>Click <strong>"Show"</strong> and enter your Facebook password</li>
+                    <li>Copy the App Secret - you'll need it in ghst_</li>
+                </ol>
+                
+                <h2>Step 6: Configure Redirect URLs</h2>
+                
+                <ol>
+                    <li>In your Facebook app, go to <strong>Products → Facebook Login → Settings</strong></li>
+                    <li>In the <strong>"Valid OAuth Redirect URIs"</strong> field, add:
+                        <pre><code>https://yourdomain.com/api/oauth/callback/facebook</code></pre>
+                    </li>
+                    <li>Replace <code>yourdomain.com</code> with your actual domain</li>
+                    <li>Click <strong>"Save Changes"</strong></li>
+                </ol>
+                
+                <h2>Step 7: Configure ghst_</h2>
+                
+                <p>Now add your Facebook credentials to ghst_:</p>
+                
+                <ol>
+                    <li>Log into your ghst_ dashboard</li>
+                    <li>Go to <strong>Settings → OAuth APIs</strong></li>
+                    <li>In the Facebook section, enter:
+                        <ul>
+                            <li><strong>Facebook App ID:</strong> Your App ID from Step 5</li>
+                            <li><strong>Facebook App Secret:</strong> Your App Secret from Step 5</li>
+                        </ul>
+                    </li>
+                    <li>Click <strong>"Save Settings"</strong></li>
+                </ol>
+                
+                <h2>Step 8: Test the Connection</h2>
+                
+                <ol>
+                    <li>Go to <strong>Accounts</strong> in your ghst_ dashboard</li>
+                    <li>Click <strong>"Connect Facebook Account"</strong></li>
+                    <li>You should be redirected to Facebook for authorization</li>
+                    <li>Grant permissions to your Facebook pages</li>
+                    <li>You should be redirected back to ghst_ with your accounts connected</li>
+                </ol>
+                
+                <h2>Instagram Integration</h2>
+                
+                <p>Instagram integration works through Facebook Pages:</p>
+                
+                <div class="alert alert-info">
+                    <strong>Requirements for Instagram:</strong>
+                    <ul style="margin: 0.5rem 0;">
+                        <li>Instagram account must be a <strong>Business Account</strong></li>
+                        <li>Instagram Business Account must be connected to a Facebook Page</li>
+                        <li>You must be an admin of the connected Facebook Page</li>
+                    </ul>
+                </div>
+                
+                <h3>Converting to Instagram Business Account:</h3>
+                <ol>
+                    <li>Open Instagram app on mobile</li>
+                    <li>Go to <strong>Settings → Account</strong></li>
+                    <li>Tap <strong>"Switch to Professional Account"</strong></li>
+                    <li>Choose <strong>"Business"</strong></li>
+                    <li>Connect to your Facebook Page</li>
+                </ol>
+                
+                <h2>Production Checklist</h2>
+                
+                <p>Before going live with client accounts:</p>
+                
+                <ul>
+                    <li>✅ Complete business verification in Facebook Business Manager</li>
+                    <li>✅ Submit app for review if using advanced permissions</li>
+                    <li>✅ Test posting to your own Facebook Page</li>
+                    <li>✅ Test Instagram Business Account posting</li>
+                    <li>✅ Verify webhook endpoints are working</li>
+                    <li>✅ Set up proper SSL certificate on your domain</li>
+                </ul>
+                
+                <div class="alert alert-warning">
+                    <strong>Rate Limits:</strong> Facebook has strict rate limits for API calls. 
+                    ghst_ includes automatic rate limiting, but be aware of Facebook's policies 
+                    around automated posting.
+                </div>
+                
+                <h2>Troubleshooting</h2>
+                
+                <h3>Common Issues</h3>
+                
+                <h4>"Invalid Redirect URI" Error</h4>
+                <ul>
+                    <li>Verify the redirect URL exactly matches what's in your Facebook app settings</li>
+                    <li>Ensure you're using <code>https://</code> (SSL required)</li>
+                    <li>Check for trailing slashes or extra characters</li>
+                </ul>
+                
+                <h4>"App Not Approved" Error</h4>
+                <ul>
+                    <li>This happens when trying to connect pages you don't admin during development</li>
+                    <li>Use your own Facebook pages for testing</li>
+                    <li>Complete business verification for production use</li>
+                </ul>
+                
+                <h4>Instagram Account Not Showing</h4>
+                <ul>
+                    <li>Verify Instagram account is set to "Business" not "Creator"</li>
+                    <li>Ensure Instagram is properly connected to a Facebook Page</li>
+                    <li>You must be an admin of the connected Facebook Page</li>
+                </ul>
+                
+                <div style="margin-top: 3rem;">
+                    <a href="linkedin.html" class="btn">Next: LinkedIn Setup →</a>
+                    <a href="troubleshooting.html" class="btn btn-outline" style="margin-left: 1rem;">Troubleshooting Guide</a>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="../docs.js"></script>
+</body>
+</html>
