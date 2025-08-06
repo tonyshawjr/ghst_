@@ -267,6 +267,7 @@ $csrfToken = $auth->generateCSRFToken();
                 padding: 0.75rem;
             }
         }
+        
     </style>
 </head>
 <body class="h-full bg-black text-white">

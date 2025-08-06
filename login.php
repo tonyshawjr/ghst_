@@ -72,37 +72,119 @@ $csrfToken = $auth->generateCSRFToken();
             }
         }
         .touch-target { min-height: 44px; }
+        
+        /* Syntax highlighting */
+        .keyword { color: #ff79c6; }
+        .string { color: #f1fa8c; }
+        .comment { color: #6272a4; }
+        .method { color: #50fa7b; }
+        .url { color: #8be9fd; }
+        
     </style>
 </head>
 <body class="h-full bg-black text-white">
     <div class="flex h-full">
         <!-- Left Panel -->
-        <div class="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-gray-900 to-black p-12 flex-col justify-between">
-            <div>
-                <h1 class="text-5xl font-bold mb-8">
-                    <span class="text-purple-500">*</span> ghst_
-                </h1>
-                <p class="text-gray-400 mb-12">Multi-client social media scheduling for the modern web.</p>
-                
-                <div class="bg-gray-900 rounded-lg p-6 border border-gray-800">
-                    <p class="text-sm text-gray-500 mb-2"># Schedule a post via API</p>
-                    <pre class="text-sm text-green-400"><code>curl -X POST https://api.ghst.app/v1/posts \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "content": "Launching something big 🚀",
-    "platforms": ["instagram", "twitter"],
-    "scheduled_at": "2025-01-01T12:00:00Z"
-  }'</code></pre>
-                </div>
-            </div>
-            
-            <div class="space-y-4">
-                <p class="text-sm text-gray-500">Built for agencies. Powered by automation.</p>
-                <div class="flex space-x-4 text-gray-600">
-                    <span class="text-xs">v1.0.0</span>
-                    <span class="text-xs">•</span>
-                    <span class="text-xs">MIT License</span>
+        <div class="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-gray-900 to-black p-8 items-center justify-center">
+            <div class="w-full max-w-md">
+                <div>
+                    <h1 class="text-5xl font-bold mb-8">
+                        <span class="text-purple-500">*</span> ghst_
+                    </h1>
+                    <p class="text-gray-400 mb-12">Multi-client social media scheduling for the modern web.</p>
+                    
+                    <?php
+                    // Random API example on page load
+                    $examples = [
+                        [
+                            'title' => '# Schedule everywhere',
+                            'code' => '<span class="method">POST</span> <span class="url">/api/v1/posts</span>
+
+{
+  <span class="string">"content"</span>: <span class="string">"New feature drop 🚀"</span>,
+  <span class="string">"platforms"</span>: [<span class="string">"all"</span>],
+  <span class="string">"media"</span>: [<span class="string">"launch.jpg"</span>],
+  <span class="string">"ai_optimize"</span>: <span class="keyword">true</span>,
+  <span class="string">"schedule"</span>: <span class="string">"9am EST"</span>
+}',
+                            'response' => '✓ 4 platforms • AI optimized'
+                        ],
+                        [
+                            'title' => '# Generate AI strategy',
+                            'code' => '<span class="method">POST</span> <span class="url">/api/v1/wrtr</span>
+
+{
+  <span class="string">"campaign"</span>: <span class="string">"Q1 Launch"</span>,
+  <span class="string">"weeks"</span>: <span class="keyword">12</span>,
+  <span class="string">"goals"</span>: [<span class="string">"viral"</span>],
+  <span class="string">"ai"</span>: <span class="string">"claude-3"</span>
+}',
+                            'response' => '✓ 84 posts • 12 weeks • PDF'
+                        ],
+                        [
+                            'title' => '# Real-time analytics',
+                            'code' => '<span class="method">GET</span> <span class="url">/api/v1/analytics</span>
+
+{
+  <span class="string">"period"</span>: <span class="string">"30d"</span>,
+  <span class="string">"metrics"</span>: [<span class="string">"all"</span>],
+  <span class="string">"compare"</span>: <span class="keyword">true</span>
+}',
+                            'response' => '✓ +147% engagement • 89K reach'
+                        ],
+                        [
+                            'title' => '# Bulk import CSV',
+                            'code' => '<span class="method">POST</span> <span class="url">/api/v1/bulk</span>
+
+{
+  <span class="string">"file"</span>: <span class="string">"calendar.csv"</span>,
+  <span class="string">"timezone"</span>: <span class="string">"EST"</span>,
+  <span class="string">"hashtags"</span>: <span class="keyword">auto</span>
+}',
+                            'response' => '✓ 156 posts imported'
+                        ],
+                        [
+                            'title' => '# A/B test posts',
+                            'code' => '<span class="method">POST</span> <span class="url">/api/v1/test</span>
+
+{
+  <span class="string">"variants"</span>: [
+    <span class="string">"50% off 🔥"</span>,
+    <span class="string">"Sale ends ⚡"</span>
+  ],
+  <span class="string">"duration"</span>: <span class="string">"4h"</span>
+}',
+                            'response' => '✓ Testing 2 variants'
+                        ]
+                    ];
+                    
+                    // Pick a random example
+                    $randomExample = $examples[array_rand($examples)];
+                    ?>
+                    
+                    <div class="bg-gray-900 rounded-lg p-6 border border-gray-800 mb-12">
+                        <div class="flex items-center justify-between mb-2">
+                            <p class="text-sm text-gray-500"><?= $randomExample['title'] ?></p>
+                            <div class="flex space-x-1">
+                                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse" style="animation-delay: 0.2s"></span>
+                                <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse" style="animation-delay: 0.4s"></span>
+                            </div>
+                        </div>
+                        <pre class="text-sm whitespace-pre-wrap break-words"><code><?= $randomExample['code'] ?></code></pre>
+                        <div class="mt-4 pt-4 border-t border-gray-800 text-xs text-gray-600">
+                            <span class="text-green-400"><?= explode('•', $randomExample['response'])[0] ?></span><?= strpos($randomExample['response'], '•') !== false ? ' • ' . implode('•', array_slice(explode('•', $randomExample['response']), 1)) : '' ?>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <p class="text-sm text-gray-500">Built for agencies. Powered by automation.</p>
+                        <div class="flex space-x-4 text-gray-600">
+                            <span class="text-xs">v1.0.0</span>
+                            <span class="text-xs">•</span>
+                            <span class="text-xs">MIT License</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

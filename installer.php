@@ -348,6 +348,7 @@ $installData = $_SESSION['install'] ?? [];
     <style>
         body { font-family: 'JetBrains Mono', monospace; }
         .glow { text-shadow: 0 0 10px rgba(139, 92, 246, 0.5); }
+        
     </style>
 </head>
 <body class="h-full bg-black text-white">
