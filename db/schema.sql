@@ -28,6 +28,23 @@ CREATE TABLE `users` (
 
 -- --------------------------------------------------------
 
+-- Table structure for `settings` (User-level settings)
+CREATE TABLE `settings` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `setting_key` varchar(100) NOT NULL,
+  `setting_value` text,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_user_setting` (`user_id`, `setting_key`),
+  KEY `user_id` (`user_id`),
+  KEY `setting_key` (`setting_key`),
+  CONSTRAINT `fk_settings_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
 -- Table structure for `clients`
 CREATE TABLE `clients` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -819,19 +836,33 @@ CREATE TABLE `email_queue` (
 -- Email tracking
 CREATE TABLE `email_tracking` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `email_queue_id` int(11) NOT NULL,
-  `tracking_token` varchar(255) NOT NULL,
-  `event_type` enum('open','click','bounce','complaint','unsubscribe') NOT NULL,
-  `ip_address` varchar(45) DEFAULT NULL,
-  `user_agent` text,
-  `link_url` varchar(500) DEFAULT NULL,
+  `tracking_id` varchar(255) NOT NULL,
+  `recipient_email` varchar(255) NOT NULL,
+  `subject` varchar(500) DEFAULT NULL,
+  `status` enum('pending','sending','sent','failed','delivered','opened','clicked','bounced') DEFAULT 'sent',
+  `provider_id` varchar(255) DEFAULT NULL,
+  `provider_response` text,
+  `open_count` int(11) DEFAULT 0,
+  `click_count` int(11) DEFAULT 0,
+  `opened_at` datetime DEFAULT NULL,
+  `clicked_at` datetime DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
-  KEY `email_queue_id` (`email_queue_id`),
-  KEY `tracking_token` (`tracking_token`),
-  KEY `event_type` (`event_type`),
-  KEY `created_at` (`created_at`),
-  CONSTRAINT `fk_tracking_email` FOREIGN KEY (`email_queue_id`) REFERENCES `email_queue` (`id`) ON DELETE CASCADE
+  UNIQUE KEY `tracking_id` (`tracking_id`),
+  KEY `recipient_email` (`recipient_email`),
+  KEY `status` (`status`),
+  KEY `created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Email click tracking
+CREATE TABLE `email_clicks` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `tracking_id` varchar(255) NOT NULL,
+  `url` varchar(500) NOT NULL,
+  `clicked_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `tracking_id` (`tracking_id`),
+  KEY `clicked_at` (`clicked_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------

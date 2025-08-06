@@ -11,9 +11,11 @@ $auth->requireLogin();
 requireClient();
 
 $db = Database::getInstance();
+$user = $auth->getCurrentUser();
 $client = $auth->getCurrentClient();
 $clientId = $client['id'];
-$ai = new AIContentSuggestions($clientId);
+$userId = $user['id'];
+$ai = new AIContentSuggestions($clientId, $userId);
 
 // Handle AJAX requests
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
@@ -68,10 +70,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     exit;
 }
 
-// Load current AI settings
-$stmt = $db->prepare("SELECT claude_api_key, claude_model, openai_api_key, openai_model FROM clients WHERE id = ?");
-$stmt->execute([$clientId]);
-$aiSettings = $stmt->fetch();
+// Load current AI settings from user settings
+$aiSettings = [];
+$stmt = $db->prepare("SELECT setting_key, setting_value FROM settings WHERE setting_key LIKE 'ai_%' AND user_id = ?");
+$stmt->execute([$userId]);
+$settings = $stmt->fetchAll();
+
+foreach ($settings as $setting) {
+    switch ($setting['setting_key']) {
+        case 'ai_claude_api_key':
+            $aiSettings['claude_api_key'] = $setting['setting_value'];
+            break;
+        case 'ai_claude_model':
+            $aiSettings['claude_model'] = $setting['setting_value'];
+            break;
+        case 'ai_openai_api_key':
+            $aiSettings['openai_api_key'] = $setting['setting_value'];
+            break;
+        case 'ai_openai_model':
+            $aiSettings['openai_model'] = $setting['setting_value'];
+            break;
+    }
+}
+
+// Set defaults if not found
+if (!isset($aiSettings['claude_api_key'])) $aiSettings['claude_api_key'] = '';
+if (!isset($aiSettings['claude_model'])) $aiSettings['claude_model'] = 'claude-3-5-sonnet-20241022';
+if (!isset($aiSettings['openai_api_key'])) $aiSettings['openai_api_key'] = '';
+if (!isset($aiSettings['openai_model'])) $aiSettings['openai_model'] = 'gpt-4o';
 
 // Get configured providers
 $configuredProviders = $ai->getConfiguredProviders();
