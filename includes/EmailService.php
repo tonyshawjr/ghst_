@@ -635,13 +635,15 @@ class SMTPProvider {
     }
     
     public function send($emailData) {
-        // Use PHPMailer for SMTP
-        if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
-            require_once INCLUDES_PATH . '/vendor/phpmailer/PHPMailer.php';
-            require_once INCLUDES_PATH . '/vendor/phpmailer/SMTP.php';
-            require_once INCLUDES_PATH . '/vendor/phpmailer/Exception.php';
+        // Check if we should use PHPMailer (if available) or native mail
+        if (class_exists('PHPMailer\PHPMailer\PHPMailer')) {
+            return $this->sendWithPHPMailer($emailData);
+        } else {
+            return $this->sendWithNativeMail($emailData);
         }
-        
+    }
+    
+    private function sendWithPHPMailer($emailData) {
         try {
             $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
             
@@ -701,6 +703,66 @@ class SMTPProvider {
                 'success' => false,
                 'error' => $e->getMessage(),
                 'provider' => 'smtp'
+            ];
+        }
+    }
+    
+    private function sendWithNativeMail($emailData) {
+        try {
+            // Build headers
+            $headers = [];
+            $headers[] = 'MIME-Version: 1.0';
+            $headers[] = 'Content-type: text/html; charset=UTF-8';
+            $headers[] = 'From: ' . $this->config['email_from_name'] . ' <' . $this->config['email_from_email'] . '>';
+            
+            if (!empty($this->config['email_reply_to'])) {
+                $headers[] = 'Reply-To: ' . $this->config['email_reply_to'];
+            }
+            
+            // Add custom headers for tracking
+            if (!empty($emailData['tracking_id'])) {
+                $headers[] = 'X-Tracking-ID: ' . $emailData['tracking_id'];
+            }
+            
+            // Get recipient
+            $to = is_array($emailData['to']) ? $emailData['to']['email'] : $emailData['to'];
+            
+            // For SMTP settings, try to use them with ini_set
+            if (!empty($this->config['email_smtp_host'])) {
+                ini_set('SMTP', $this->config['email_smtp_host']);
+                ini_set('smtp_port', $this->config['email_smtp_port']);
+                
+                // Note: Authentication with native mail() is limited
+                // On cPanel, the local mail system usually handles this
+            }
+            
+            // Send email
+            $result = mail(
+                $to,
+                $emailData['subject'],
+                $emailData['html_body'],
+                implode("\r\n", $headers)
+            );
+            
+            if ($result) {
+                return [
+                    'success' => true,
+                    'message_id' => uniqid('mail_'),
+                    'provider' => 'native_mail'
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'error' => 'Failed to send email using mail() function',
+                    'provider' => 'native_mail'
+                ];
+            }
+            
+        } catch (Exception $e) {
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+                'provider' => 'native_mail'
             ];
         }
     }

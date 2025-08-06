@@ -11,6 +11,7 @@ require_once __DIR__ . '/Database.php';
 class AIContentSuggestions {
     private $db;
     private $clientId;
+    private $userId;
     private $provider;
     private $apiKey;
     private $claudeApiKey;
@@ -31,27 +32,55 @@ class AIContentSuggestions {
         ]
     ];
     
-    public function __construct($clientId) {
+    public function __construct($clientId, $userId = null) {
         $this->db = Database::getInstance();
         $this->clientId = $clientId;
+        $this->userId = $userId;
         $this->loadApiSettings();
     }
     
     /**
-     * Load API settings for the client
+     * Load API settings for the user
      */
     private function loadApiSettings() {
-        $stmt = $this->db->prepare(
-            "SELECT claude_api_key, claude_model, openai_api_key, openai_model FROM clients WHERE id = ?"
-        );
-        $stmt->execute([$this->clientId]);
-        $settings = $stmt->fetch();
-        
-        if ($settings) {
-            $this->claudeApiKey = $settings['claude_api_key'];
-            $this->claudeModel = $settings['claude_model'];
-            $this->openaiApiKey = $settings['openai_api_key'];
-            $this->openaiModel = $settings['openai_model'];
+        if ($this->userId) {
+            // Load from user settings table (new method)
+            $stmt = $this->db->prepare(
+                "SELECT setting_key, setting_value FROM settings WHERE setting_key LIKE 'ai_%' AND user_id = ?"
+            );
+            $stmt->execute([$this->userId]);
+            $settings = $stmt->fetchAll();
+            
+            foreach ($settings as $setting) {
+                switch ($setting['setting_key']) {
+                    case 'ai_claude_api_key':
+                        $this->claudeApiKey = $setting['setting_value'];
+                        break;
+                    case 'ai_claude_model':
+                        $this->claudeModel = $setting['setting_value'];
+                        break;
+                    case 'ai_openai_api_key':
+                        $this->openaiApiKey = $setting['setting_value'];
+                        break;
+                    case 'ai_openai_model':
+                        $this->openaiModel = $setting['setting_value'];
+                        break;
+                }
+            }
+        } else {
+            // Fallback to client settings for backward compatibility
+            $stmt = $this->db->prepare(
+                "SELECT claude_api_key, claude_model, openai_api_key, openai_model FROM clients WHERE id = ?"
+            );
+            $stmt->execute([$this->clientId]);
+            $settings = $stmt->fetch();
+            
+            if ($settings) {
+                $this->claudeApiKey = $settings['claude_api_key'];
+                $this->claudeModel = $settings['claude_model'];
+                $this->openaiApiKey = $settings['openai_api_key'];
+                $this->openaiModel = $settings['openai_model'];
+            }
         }
     }
     
@@ -331,24 +360,54 @@ class AIContentSuggestions {
             $this->testApiKey($provider, $apiKey);
         }
         
-        // Update the specific provider columns
-        if ($provider === 'claude') {
-            $stmt = $this->db->prepare(
-                "UPDATE clients SET claude_api_key = ?, claude_model = ? WHERE id = ?"
-            );
-            $stmt->execute([$apiKey, $model, $this->clientId]);
-            $this->claudeApiKey = $apiKey;
-            $this->claudeModel = $model;
+        // Update the specific provider settings
+        if ($this->userId) {
+            // Save to user settings table (new method)
+            if ($provider === 'claude') {
+                $this->saveSettingToDatabase('ai_claude_api_key', $apiKey);
+                $this->saveSettingToDatabase('ai_claude_model', $model ?: 'claude-3-5-sonnet-20241022');
+                $this->claudeApiKey = $apiKey;
+                $this->claudeModel = $model;
+            } else {
+                $this->saveSettingToDatabase('ai_openai_api_key', $apiKey);
+                $this->saveSettingToDatabase('ai_openai_model', $model ?: 'gpt-4o');
+                $this->openaiApiKey = $apiKey;
+                $this->openaiModel = $model;
+            }
         } else {
-            $stmt = $this->db->prepare(
-                "UPDATE clients SET openai_api_key = ?, openai_model = ? WHERE id = ?"
-            );
-            $stmt->execute([$apiKey, $model, $this->clientId]);
-            $this->openaiApiKey = $apiKey;
-            $this->openaiModel = $model;
+            // Fallback to client settings for backward compatibility
+            if ($provider === 'claude') {
+                $stmt = $this->db->prepare(
+                    "UPDATE clients SET claude_api_key = ?, claude_model = ? WHERE id = ?"
+                );
+                $stmt->execute([$apiKey, $model, $this->clientId]);
+                $this->claudeApiKey = $apiKey;
+                $this->claudeModel = $model;
+            } else {
+                $stmt = $this->db->prepare(
+                    "UPDATE clients SET openai_api_key = ?, openai_model = ? WHERE id = ?"
+                );
+                $stmt->execute([$apiKey, $model, $this->clientId]);
+                $this->openaiApiKey = $apiKey;
+                $this->openaiModel = $model;
+            }
         }
         
         return true;
+    }
+    
+    /**
+     * Save a setting to the database
+     */
+    private function saveSettingToDatabase($key, $value) {
+        if (!$this->userId) return;
+        
+        $stmt = $this->db->prepare("
+            INSERT INTO settings (setting_key, setting_value, user_id) 
+            VALUES (?, ?, ?)
+            ON DUPLICATE KEY UPDATE setting_value = ?, updated_at = NOW()
+        ");
+        $stmt->execute([$key, $value, $this->userId, $value]);
     }
     
     /**

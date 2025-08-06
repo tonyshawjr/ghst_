@@ -1,6 +1,9 @@
 # Configuration files with sensitive data
 config.php
 
+# Serena MCP tool cache and memories
+.serena/
+
 # Development and system files
 .DS_Store
 Thumbs.db
