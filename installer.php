@@ -120,6 +120,26 @@ function handleAdminSetup() {
         exit;
     }
     
+    // =====================================================
+    // PLACEHOLDER FOR LICENSE VALIDATION
+    // =====================================================
+    // When ready to implement licensing:
+    // 1. Add license key field to step2-admin.php form
+    // 2. Validate the license key here
+    // 3. Store activation details in database
+    // 
+    // Example implementation:
+    // $licenseKey = trim($_POST['license_key'] ?? '');
+    // $licenseValid = validateLicenseKey($licenseKey);
+    // if (!$licenseValid) {
+    //     $error = 'Invalid license key';
+    //     return;
+    // }
+    // 
+    // For now, bypass license check:
+    $licenseValid = true;
+    // =====================================================
+    
     $email = trim($_POST['admin_email'] ?? '');
     $password = $_POST['admin_password'] ?? '';
     $confirmPassword = $_POST['confirm_password'] ?? '';
@@ -249,6 +269,16 @@ define('SESSION_NAME', 'ghst_session');
 define('CSRF_TOKEN_NAME', 'ghst_token');
 define('PASSWORD_SALT', '{$passwordSalt}');
 define('ENCRYPTION_KEY', '{$encryptionKey}');
+
+// License Configuration (Placeholder)
+// =====================================================
+// When licensing is implemented, uncomment and populate:
+// define('LICENSE_KEY', 'GHST-XXXX-XXXX-XXXX-XXXX');
+// define('LICENSE_ACTIVATED', '2024-01-01');
+// define('LICENSE_DOMAIN', '{$install['app_url']}');
+// For now, bypass license checks:
+define('LICENSE_VALID', true);
+// =====================================================
 
 // Paths
 define('ROOT_PATH', dirname(__FILE__));
