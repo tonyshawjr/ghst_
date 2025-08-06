@@ -45,6 +45,23 @@ CREATE TABLE `settings` (
 
 -- --------------------------------------------------------
 
+-- Table structure for `client_settings` (Client-level settings for OAuth, etc.)
+CREATE TABLE `client_settings` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `client_id` int(11) NOT NULL,
+  `setting_key` varchar(100) NOT NULL,
+  `setting_value` text,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_client_setting` (`client_id`, `setting_key`),
+  KEY `client_id` (`client_id`),
+  KEY `setting_key` (`setting_key`),
+  CONSTRAINT `fk_client_settings_client` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
 -- Table structure for `clients`
 CREATE TABLE `clients` (
   `id` int(11) NOT NULL AUTO_INCREMENT,

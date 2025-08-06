@@ -36,18 +36,20 @@ define('ALLOWED_IMAGE_TYPES', ['jpg', 'jpeg', 'png', 'gif', 'webp']);
 define('ALLOWED_VIDEO_TYPES', ['mp4', 'mov', 'avi', 'webm']);
 
 // OAuth Settings (Social Media Platforms)
+// OPTIONAL: These can be configured through the UI at Settings > OAuth APIs
+// Leave as default values if you prefer to configure through the dashboard
 define('OAUTH_REDIRECT_BASE', APP_URL . '/api/oauth/callback/');
 
-// Facebook/Instagram
+// Facebook/Instagram (Optional - Configure in Settings)
 define('FB_APP_ID', 'your_facebook_app_id');
 define('FB_APP_SECRET', 'your_facebook_app_secret');
 define('FB_API_VERSION', 'v18.0');
 
-// LinkedIn
+// LinkedIn (Optional - Configure in Settings)
 define('LINKEDIN_CLIENT_ID', 'your_linkedin_client_id');
 define('LINKEDIN_CLIENT_SECRET', 'your_linkedin_client_secret');
 
-// Twitter/X
+// Twitter/X (Optional - Configure in Settings)
 define('TWITTER_API_KEY', 'your_twitter_api_key');
 define('TWITTER_API_SECRET', 'your_twitter_api_secret');
 define('TWITTER_BEARER_TOKEN', 'your_twitter_bearer_token');

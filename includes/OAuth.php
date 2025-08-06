@@ -7,10 +7,86 @@
 class OAuth {
     private $db;
     private $auth;
+    private $oauthSettings = [];
     
     public function __construct() {
         $this->db = Database::getInstance();
         $this->auth = new Auth();
+        $this->loadOAuthSettings();
+    }
+    
+    /**
+     * Load OAuth settings from database or config
+     */
+    private function loadOAuthSettings() {
+        // First, try to load from client settings if a client is selected
+        if (isset($_SESSION['current_client_id'])) {
+            $stmt = $this->db->prepare("
+                SELECT setting_key, setting_value 
+                FROM client_settings 
+                WHERE client_id = ? 
+                AND setting_key LIKE 'oauth_%'
+            ");
+            $stmt->execute([$_SESSION['current_client_id']]);
+            $settings = $stmt->fetchAll();
+            
+            foreach ($settings as $setting) {
+                if (!empty($setting['setting_value'])) {
+                    // Decode if it was encoded
+                    if (strpos($setting['setting_key'], 'secret') !== false || strpos($setting['setting_key'], 'token') !== false) {
+                        $this->oauthSettings[$setting['setting_key']] = base64_decode($setting['setting_value']);
+                    } else {
+                        $this->oauthSettings[$setting['setting_key']] = $setting['setting_value'];
+                    }
+                }
+            }
+        }
+        
+        // If no client settings, try user settings
+        if (empty($this->oauthSettings) && isset($_SESSION['user_id'])) {
+            $stmt = $this->db->prepare("
+                SELECT setting_key, setting_value 
+                FROM settings 
+                WHERE user_id = ? 
+                AND setting_key LIKE 'oauth_%'
+            ");
+            $stmt->execute([$_SESSION['user_id']]);
+            $settings = $stmt->fetchAll();
+            
+            foreach ($settings as $setting) {
+                if (!empty($setting['setting_value'])) {
+                    // Decode if it was encoded
+                    if (strpos($setting['setting_key'], 'secret') !== false || strpos($setting['setting_key'], 'token') !== false) {
+                        $this->oauthSettings[$setting['setting_key']] = base64_decode($setting['setting_value']);
+                    } else {
+                        $this->oauthSettings[$setting['setting_key']] = $setting['setting_value'];
+                    }
+                }
+            }
+        }
+        
+        // Fall back to config constants if not in database
+        if (empty($this->oauthSettings['oauth_fb_app_id']) && FB_APP_ID !== 'your_facebook_app_id') {
+            $this->oauthSettings['oauth_fb_app_id'] = FB_APP_ID;
+            $this->oauthSettings['oauth_fb_app_secret'] = FB_APP_SECRET;
+        }
+        
+        if (empty($this->oauthSettings['oauth_linkedin_client_id']) && LINKEDIN_CLIENT_ID !== 'your_linkedin_client_id') {
+            $this->oauthSettings['oauth_linkedin_client_id'] = LINKEDIN_CLIENT_ID;
+            $this->oauthSettings['oauth_linkedin_client_secret'] = LINKEDIN_CLIENT_SECRET;
+        }
+        
+        if (empty($this->oauthSettings['oauth_twitter_api_key']) && TWITTER_API_KEY !== 'your_twitter_api_key') {
+            $this->oauthSettings['oauth_twitter_api_key'] = TWITTER_API_KEY;
+            $this->oauthSettings['oauth_twitter_api_secret'] = TWITTER_API_SECRET;
+        }
+    }
+    
+    /**
+     * Get OAuth setting
+     */
+    private function getOAuthSetting($key) {
+        return $this->oauthSettings[$key] ?? null;
     }
     
     /**
@@ -22,8 +98,12 @@ class OAuth {
         
         switch ($platform) {
             case 'facebook':
+                $fbAppId = $this->getOAuthSetting('oauth_fb_app_id');
+                if (!$fbAppId) {
+                    throw new Exception('Facebook OAuth not configured. Please configure in Settings > OAuth APIs.');
+                }
                 return "https://www.facebook.com/v" . str_replace('v', '', FB_API_VERSION) . "/dialog/oauth?" . http_build_query([
-                    'client_id' => FB_APP_ID,
+                    'client_id' => $fbAppId,
                     'redirect_uri' => $redirectUri,
                     'scope' => 'pages_manage_posts,pages_read_engagement,instagram_basic,instagram_content_publish',
                     'state' => $state,
@@ -31,6 +111,10 @@ class OAuth {
                 ]);
                 
             case 'twitter':
+                $twitterApiKey = $this->getOAuthSetting('oauth_twitter_api_key');
+                if (!$twitterApiKey) {
+                    throw new Exception('Twitter OAuth not configured. Please configure in Settings > OAuth APIs.');
+                }
                 // Twitter uses OAuth 2.0 PKCE flow
                 $codeVerifier = $this->generateCodeVerifier();
                 $codeChallenge = $this->generateCodeChallenge($codeVerifier);
@@ -40,7 +124,7 @@ class OAuth {
                 
                 return "https://twitter.com/i/oauth2/authorize?" . http_build_query([
                     'response_type' => 'code',
-                    'client_id' => TWITTER_API_KEY,
+                    'client_id' => $twitterApiKey,
                     'redirect_uri' => $redirectUri,
                     'scope' => 'tweet.read tweet.write users.read offline.access',
                     'state' => $state,
@@ -49,9 +133,13 @@ class OAuth {
                 ]);
                 
             case 'linkedin':
+                $linkedinClientId = $this->getOAuthSetting('oauth_linkedin_client_id');
+                if (!$linkedinClientId) {
+                    throw new Exception('LinkedIn OAuth not configured. Please configure in Settings > OAuth APIs.');
+                }
                 return "https://www.linkedin.com/oauth/v2/authorization?" . http_build_query([
                     'response_type' => 'code',
-                    'client_id' => LINKEDIN_CLIENT_ID,
+                    'client_id' => $linkedinClientId,
                     'redirect_uri' => $redirectUri,
                     'scope' => 'w_member_social',
                     'state' => $state
@@ -94,40 +182,55 @@ class OAuth {
         
         switch ($platform) {
             case 'facebook':
+                $fbAppId = $this->getOAuthSetting('oauth_fb_app_id');
+                $fbAppSecret = $this->getOAuthSetting('oauth_fb_app_secret');
+                if (!$fbAppId || !$fbAppSecret) {
+                    throw new Exception('Facebook OAuth not configured. Please configure in Settings > OAuth APIs.');
+                }
                 $tokenUrl = "https://graph.facebook.com/v" . str_replace('v', '', FB_API_VERSION) . "/oauth/access_token";
                 $params = [
-                    'client_id' => FB_APP_ID,
-                    'client_secret' => FB_APP_SECRET,
+                    'client_id' => $fbAppId,
+                    'client_secret' => $fbAppSecret,
                     'redirect_uri' => $redirectUri,
                     'code' => $code
                 ];
                 break;
                 
             case 'twitter':
+                $twitterApiKey = $this->getOAuthSetting('oauth_twitter_api_key');
+                $twitterApiSecret = $this->getOAuthSetting('oauth_twitter_api_secret');
+                if (!$twitterApiKey || !$twitterApiSecret) {
+                    throw new Exception('Twitter OAuth not configured. Please configure in Settings > OAuth APIs.');
+                }
                 $tokenUrl = "https://api.twitter.com/2/oauth2/token";
                 $params = [
                     'code' => $code,
                     'grant_type' => 'authorization_code',
-                    'client_id' => TWITTER_API_KEY,
+                    'client_id' => $twitterApiKey,
                     'redirect_uri' => $redirectUri,
                     'code_verifier' => $_SESSION['twitter_code_verifier'] ?? ''
                 ];
                 
                 // Twitter requires Basic Auth
                 $headers = [
-                    'Authorization: Basic ' . base64_encode(TWITTER_API_KEY . ':' . TWITTER_API_SECRET),
+                    'Authorization: Basic ' . base64_encode($twitterApiKey . ':' . $twitterApiSecret),
                     'Content-Type: application/x-www-form-urlencoded'
                 ];
                 break;
                 
             case 'linkedin':
+                $linkedinClientId = $this->getOAuthSetting('oauth_linkedin_client_id');
+                $linkedinClientSecret = $this->getOAuthSetting('oauth_linkedin_client_secret');
+                if (!$linkedinClientId || !$linkedinClientSecret) {
+                    throw new Exception('LinkedIn OAuth not configured. Please configure in Settings > OAuth APIs.');
+                }
                 $tokenUrl = "https://www.linkedin.com/oauth/v2/accessToken";
                 $params = [
                     'grant_type' => 'authorization_code',
                     'code' => $code,
                     'redirect_uri' => $redirectUri,
-                    'client_id' => LINKEDIN_CLIENT_ID,
-                    'client_secret' => LINKEDIN_CLIENT_SECRET
+                    'client_id' => $linkedinClientId,
+                    'client_secret' => $linkedinClientSecret
                 ];
                 break;
                 
