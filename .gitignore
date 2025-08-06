@@ -31,9 +31,11 @@ public_html/uploads/*
 !public_html/uploads/index.html
 
 # Database files
-*.sql
 *.sqlite
 *.db
+# SQL files (but keep schema.sql for installation)
+*.sql
+!db/schema.sql
 
 # Backup files
 *.bak

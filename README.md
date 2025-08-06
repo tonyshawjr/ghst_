@@ -69,7 +69,44 @@ ghst_ is a powerful, self-hosted social media management platform designed for c
 - Media metadata tracking
 - Storage usage statistics
 
-### 7. Advanced Analytics & Reporting
+### 7. ghst_wrtr: Strategy Engine AI ✨
+- **12-Week AI-Powered Campaign Generation**
+  - Complete campaign strategies with weekly themes and focus areas
+  - Platform-specific post suggestions (3-7 posts per week)
+  - Tone guidelines and messaging frameworks
+  - Visual content ideas and hashtag recommendations
+  - CTAs and conversion objectives for each week
+- **Multi-Step Campaign Wizard**
+  - Campaign basics (goals, offers, target audience)
+  - Voice & tone configuration (brand personality)
+  - Campaign settings (type, frequency, duration)
+  - AI model selection (Claude or ChatGPT using your API keys)
+  - Optional analytics upload for data-driven strategies
+- **Dynamic Strategy Evolution**
+  - Upload analytics JSON to improve strategies
+  - AI adapts based on performance data
+  - Single week regeneration with feedback
+  - Reinforces high-performing content patterns
+  - Retires low-engagement approaches
+- **Professional Campaign Management**
+  - Week-by-week expandable view with all content
+  - Push individual posts or entire weeks to scheduler
+  - Campaign versioning and change tracking
+  - Progress monitoring and status indicators
+- **PDF Export & Sharing**
+  - Client-branded PDF reports
+  - Executive summaries and detailed breakdowns
+  - Secure shareable links with password protection
+  - Expiration controls and access logging
+  - Multiple export formats (detailed, summary, presentation)
+- **Analytics Integration**
+  - Parse Instagram, Facebook, Twitter, LinkedIn data
+  - Extract performance insights automatically
+  - Identify optimal posting times and formats
+  - Content mix analysis and recommendations
+  - Engagement pattern recognition
+
+### 8. Advanced Analytics & Reporting
 - **Comprehensive Analytics Dashboard**
   - Real-time engagement metrics and trends
   - Platform comparison charts
